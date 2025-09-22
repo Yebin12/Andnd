@@ -61,12 +61,6 @@ export function Header({
                 <Button variant="ghost" onClick={() => setShowLoginModal(true)}>
                   Log In
                 </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => (window.location.href = "/reset-password")}
-                >
-                  Reset Password
-                </Button>
                 <Button onClick={() => setShowSignInModal(true)}>
                   Sign In
                 </Button>

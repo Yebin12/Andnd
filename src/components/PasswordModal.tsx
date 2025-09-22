@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from "./ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Checkbox } from "./ui/checkbox";
@@ -23,13 +28,13 @@ interface PasswordModalProps {
   };
 }
 
-export function PasswordModal({ 
-  open, 
-  onOpenChange, 
-  onBack, 
+export function PasswordModal({
+  open,
+  onOpenChange,
+  onBack,
   onSignUpComplete,
   onSwitchToLogin = () => {},
-  formData
+  formData,
 }: PasswordModalProps) {
   const [password, setPassword] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -43,13 +48,15 @@ export function PasswordModal({
   const hasLetter = /[a-zA-Z]/.test(password);
   const hasNumber = /\d/.test(password);
   const hasSpecialChar = /[!@#$%^&*(),.?\":{}|<>]/.test(password);
-  
-  const isPasswordValid = hasMinLength && hasLetter && hasNumber && hasSpecialChar;
-  const canSignUp = isPasswordValid && acceptedTerms && !loading && !userAlreadyExists;
+
+  const isPasswordValid =
+    hasMinLength && hasLetter && hasNumber && hasSpecialChar;
+  const canSignUp =
+    isPasswordValid && acceptedTerms && !loading && !userAlreadyExists;
 
   const handleSignUp = async () => {
     if (!canSignUp || !formData) return;
-    
+
     setLoading(true);
     setError("");
     setUserAlreadyExists(false);
@@ -59,18 +66,29 @@ export function PasswordModal({
       const userMetadata = {
         name: formData.name,
         username: formData.username,
-        date_of_birth: `${formData.year}-${formData.month.padStart(2, '0')}-${formData.day.padStart(2, '0')}`,
-        created_at: new Date().toISOString()
+        date_of_birth: `${formData.year}-${formData.month.padStart(
+          2,
+          "0"
+        )}-${formData.day.padStart(2, "0")}`,
+        created_at: new Date().toISOString(),
       };
 
       let result;
 
       // Determine if we're using email or phone
       if (formData.email) {
-        result = await authHelpers.signUp(formData.email, password, userMetadata);
+        result = await authHelpers.signUp(
+          formData.email,
+          password,
+          userMetadata
+        );
       } else if (formData.phone) {
         const formattedPhone = utils.formatPhone(formData.phone);
-        result = await authHelpers.signUpWithPhone(formattedPhone, password, userMetadata);
+        result = await authHelpers.signUpWithPhone(
+          formattedPhone,
+          password,
+          userMetadata
+        );
       } else {
         throw new Error("No email or phone provided");
       }
@@ -78,22 +96,37 @@ export function PasswordModal({
       if (result.error) {
         // Check if the error is due to user already existing
         const errorMessage = result.error.message?.toLowerCase() || "";
-        if (errorMessage.includes("already") || errorMessage.includes("exists") || errorMessage.includes("registered")) {
+        if (
+          errorMessage.includes("already") ||
+          errorMessage.includes("exists") ||
+          errorMessage.includes("registered")
+        ) {
           setUserAlreadyExists(true);
           setError("User already registered");
         } else {
-          setError(result.error.message || "Failed to create account. Please try again.");
+          setError(
+            result.error.message ||
+              "Failed to create account. Please try again."
+          );
         }
       } else {
+        const user = result.data?.user;
+        const session = result.data?.session;
         console.log("Account created successfully:", result.data);
-        
+
         // Check if user needs email verification
-        if (result.data.user && !result.data.session) {
+        if (user && !session) {
           // User needs to verify email before being logged in
-          setError("Please check your email and click the verification link to complete your account setup.");
-        } else {
+          setError(
+            "Please check your email and click the verification link to complete your account setup."
+          );
+        } else if (session) {
           // User is automatically logged in or session was created
           onSignUpComplete();
+        } else {
+          setError(
+            "Account created, but session not established. Check your email to verify."
+          );
         }
       }
     } catch (error) {
@@ -113,13 +146,15 @@ export function PasswordModal({
       <DialogContent className="sm:max-w-md rounded-3xl border-0 p-8 bg-white">
         {/* Header */}
         <div className="flex items-center justify-center mb-8">
-          <DialogTitle className="text-xl font-semibold text-gray-900">Create your password</DialogTitle>
+          <DialogTitle className="text-xl font-semibold text-gray-900">
+            Create your password
+          </DialogTitle>
         </div>
-        
+
         <DialogDescription className="sr-only">
           Create a secure password for your HelperHub account.
         </DialogDescription>
-        
+
         <div className="space-y-6">
           {/* Password Requirements */}
           <div className="space-y-3">
@@ -127,20 +162,52 @@ export function PasswordModal({
               Your password must contain at least:
             </p>
             <div className="space-y-2">
-              <div className={`flex items-center gap-2 text-xs ${hasMinLength ? 'text-green-600' : 'text-gray-500'}`}>
-                <div className={`w-1.5 h-1.5 rounded-full ${hasMinLength ? 'bg-green-600' : 'bg-gray-300'}`} />
+              <div
+                className={`flex items-center gap-2 text-xs ${
+                  hasMinLength ? "text-green-600" : "text-gray-500"
+                }`}
+              >
+                <div
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    hasMinLength ? "bg-green-600" : "bg-gray-300"
+                  }`}
+                />
                 8 characters
               </div>
-              <div className={`flex items-center gap-2 text-xs ${hasLetter ? 'text-green-600' : 'text-gray-500'}`}>
-                <div className={`w-1.5 h-1.5 rounded-full ${hasLetter ? 'bg-green-600' : 'bg-gray-300'}`} />
+              <div
+                className={`flex items-center gap-2 text-xs ${
+                  hasLetter ? "text-green-600" : "text-gray-500"
+                }`}
+              >
+                <div
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    hasLetter ? "bg-green-600" : "bg-gray-300"
+                  }`}
+                />
                 At least one letter
               </div>
-              <div className={`flex items-center gap-2 text-xs ${hasNumber ? 'text-green-600' : 'text-gray-500'}`}>
-                <div className={`w-1.5 h-1.5 rounded-full ${hasNumber ? 'bg-green-600' : 'bg-gray-300'}`} />
+              <div
+                className={`flex items-center gap-2 text-xs ${
+                  hasNumber ? "text-green-600" : "text-gray-500"
+                }`}
+              >
+                <div
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    hasNumber ? "bg-green-600" : "bg-gray-300"
+                  }`}
+                />
                 At least one number
               </div>
-              <div className={`flex items-center gap-2 text-xs ${hasSpecialChar ? 'text-green-600' : 'text-gray-500'}`}>
-                <div className={`w-1.5 h-1.5 rounded-full ${hasSpecialChar ? 'bg-green-600' : 'bg-gray-300'}`} />
+              <div
+                className={`flex items-center gap-2 text-xs ${
+                  hasSpecialChar ? "text-green-600" : "text-gray-500"
+                }`}
+              >
+                <div
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    hasSpecialChar ? "bg-green-600" : "bg-gray-300"
+                  }`}
+                />
                 At least one special character (!@#$%^&*...)
               </div>
             </div>
@@ -155,8 +222,8 @@ export function PasswordModal({
               onChange={(e) => setPassword(e.target.value)}
               className={`h-14 rounded-lg text-base placeholder:text-gray-500 focus:ring-0 pr-12 ${
                 password && !isPasswordValid
-                  ? 'border-red-300 focus:border-red-400' 
-                  : 'border-gray-200 focus:border-gray-300'
+                  ? "border-red-300 focus:border-red-400"
+                  : "border-gray-200 focus:border-gray-300"
               }`}
             />
             <button
@@ -178,11 +245,13 @@ export function PasswordModal({
               <Checkbox
                 id="terms"
                 checked={acceptedTerms}
-                onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+                onCheckedChange={(checked: boolean | "indeterminate") =>
+                  setAcceptedTerms(checked === true)
+                }
                 className="mt-0.5"
               />
-              <label 
-                htmlFor="terms" 
+              <label
+                htmlFor="terms"
                 className="text-xs text-gray-600 leading-relaxed cursor-pointer"
               >
                 I agree to the{" "}
@@ -193,8 +262,9 @@ export function PasswordModal({
                 <a href="#" className="text-blue-500 hover:underline">
                   Privacy Policy
                 </a>
-                . By creating an account, I understand that I can connect with community members 
-                to give and receive help with various tasks and services.
+                . By creating an account, I understand that I can connect with
+                community members to give and receive help with various tasks
+                and services.
               </label>
             </div>
           </div>
@@ -222,15 +292,15 @@ export function PasswordModal({
                 onClick={handleSignUp}
                 disabled={!canSignUp}
                 className={`w-full h-14 text-white rounded-full text-base font-medium transition-all ${
-                  canSignUp 
-                    ? 'bg-gray-700 hover:bg-gray-800' 
-                    : 'bg-gray-300 cursor-not-allowed'
+                  canSignUp
+                    ? "bg-gray-700 hover:bg-gray-800"
+                    : "bg-gray-300 cursor-not-allowed"
                 }`}
               >
                 {loading ? "Creating Account..." : "Sign Up"}
               </Button>
             )}
-            
+
             <Button
               type="button"
               variant="ghost"
