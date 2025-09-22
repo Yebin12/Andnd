@@ -1,21 +1,21 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = 'https://gknokhovhtsttxtjwqzw.supabase.co'
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdrbm9raG92aHRzdHR4dGp3cXp3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0MjYxMDAsImV4cCI6MjA3NDAwMjEwMH0.fNdNVyatvTH2CI6bzGxmx931alksfFtMaqgaarJnYho'
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    flowType: 'pkce'
+    flowType: "pkce",
   },
   global: {
     headers: {
-      'X-Client-Info': 'helperhub-web-app'
-    }
-  }
-})
+      "X-Client-Info": "helperhub-web-app",
+    },
+  },
+});
 
 // Helper functions for authentication
 export const authHelpers = {
@@ -27,13 +27,19 @@ export const authHelpers = {
         password,
         options: {
           data: metadata,
-          emailRedirectTo: `${window.location.origin}`
-        }
-      })
-      return { data, error }
+          emailRedirectTo: `${window.location.origin}`,
+        },
+      });
+      return { data, error };
     } catch (error) {
-      console.error('SignUp error:', error)
-      return { data: null, error: { message: 'Network error occurred. Please check your connection and try again.' } }
+      console.error("SignUp error:", error);
+      return {
+        data: null,
+        error: {
+          message:
+            "Network error occurred. Please check your connection and try again.",
+        },
+      };
     }
   },
 
@@ -44,13 +50,19 @@ export const authHelpers = {
         phone,
         password,
         options: {
-          data: metadata
-        }
-      })
-      return { data, error }
+          data: metadata,
+        },
+      });
+      return { data, error };
     } catch (error) {
-      console.error('SignUpWithPhone error:', error)
-      return { data: null, error: { message: 'Network error occurred. Please check your connection and try again.' } }
+      console.error("SignUpWithPhone error:", error);
+      return {
+        data: null,
+        error: {
+          message:
+            "Network error occurred. Please check your connection and try again.",
+        },
+      };
     }
   },
 
@@ -59,12 +71,18 @@ export const authHelpers = {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        password
-      })
-      return { data, error }
+        password,
+      });
+      return { data, error };
     } catch (error) {
-      console.error('SignInWithEmail error:', error)
-      return { data: null, error: { message: 'Network error occurred. Please check your connection and try again.' } }
+      console.error("SignInWithEmail error:", error);
+      return {
+        data: null,
+        error: {
+          message:
+            "Network error occurred. Please check your connection and try again.",
+        },
+      };
     }
   },
 
@@ -73,12 +91,18 @@ export const authHelpers = {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         phone,
-        password
-      })
-      return { data, error }
+        password,
+      });
+      return { data, error };
     } catch (error) {
-      console.error('SignInWithPhone error:', error)
-      return { data: null, error: { message: 'Network error occurred. Please check your connection and try again.' } }
+      console.error("SignInWithPhone error:", error);
+      return {
+        data: null,
+        error: {
+          message:
+            "Network error occurred. Please check your connection and try again.",
+        },
+      };
     }
   },
 
@@ -87,68 +111,96 @@ export const authHelpers = {
     // First, we need to find the user by username
     // This requires a custom function or table lookup
     // For now, we'll return an error suggesting email/phone login
-    return { 
-      data: null, 
-      error: { 
-        message: "Please use your email or phone number to log in. Username login requires additional setup." 
-      } 
-    }
+    return {
+      data: null,
+      error: {
+        message:
+          "Please use your email or phone number to log in. Username login requires additional setup.",
+      },
+    };
   },
 
   // Send password reset email
   async resetPassword(email: string) {
     try {
       const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`
-      })
-      return { data, error }
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      return { data, error };
     } catch (error) {
-      console.error('ResetPassword error:', error)
-      return { data: null, error: { message: 'Network error occurred. Please check your connection and try again.' } }
+      console.error("ResetPassword error:", error);
+      return {
+        data: null,
+        error: {
+          message:
+            "Network error occurred. Please check your connection and try again.",
+        },
+      };
     }
   },
 
   // Send password reset SMS
   async resetPasswordSMS(phone: string) {
     try {
-      const { data, error } = await supabase.auth.resetPasswordForPhone(phone)
-      return { data, error }
+      const { data, error } = await supabase.auth.signInWithOtp({
+        phone,
+        options: { channel: "sms", shouldCreateUser: false },
+      });
+      return { data, error };
     } catch (error) {
-      console.error('ResetPasswordSMS error:', error)
-      return { data: null, error: { message: 'Network error occurred. Please check your connection and try again.' } }
+      console.error("ResetPasswordSMS error:", error);
+      return {
+        data: null,
+        error: {
+          message:
+            "Network error occurred. Please check your connection and try again.",
+        },
+      };
     }
   },
 
   // Sign out
   async signOut() {
     try {
-      const { error } = await supabase.auth.signOut()
-      return { error }
+      const { error } = await supabase.auth.signOut();
+      return { error };
     } catch (error) {
-      console.error('SignOut error:', error)
-      return { error: { message: 'Network error occurred during sign out.' } }
+      console.error("SignOut error:", error);
+      return { error: { message: "Network error occurred during sign out." } };
     }
   },
 
   // Get current session
   async getSession() {
     try {
-      const { data: { session }, error } = await supabase.auth.getSession()
-      return { session, error }
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.getSession();
+      return { session, error };
     } catch (error) {
-      console.error('GetSession error:', error)
-      return { session: null, error: { message: 'Network error occurred while getting session.' } }
+      console.error("GetSession error:", error);
+      return {
+        session: null,
+        error: { message: "Network error occurred while getting session." },
+      };
     }
   },
 
   // Get current user
   async getUser() {
     try {
-      const { data: { user }, error } = await supabase.auth.getUser()
-      return { user, error }
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
+      return { user, error };
     } catch (error) {
-      console.error('GetUser error:', error)
-      return { user: null, error: { message: 'Network error occurred while getting user.' } }
+      console.error("GetUser error:", error);
+      return {
+        user: null,
+        error: { message: "Network error occurred while getting user." },
+      };
     }
   },
 
@@ -156,99 +208,118 @@ export const authHelpers = {
   async updateUserMetadata(metadata: any) {
     try {
       const { data, error } = await supabase.auth.updateUser({
-        data: metadata
-      })
-      return { data, error }
+        data: metadata,
+      });
+      return { data, error };
     } catch (error) {
-      console.error('UpdateUserMetadata error:', error)
-      return { data: null, error: { message: 'Network error occurred while updating user.' } }
+      console.error("UpdateUserMetadata error:", error);
+      return {
+        data: null,
+        error: { message: "Network error occurred while updating user." },
+      };
     }
   },
 
   // Verify OTP for phone sign up
-  async verifyOTP(phone: string, token: string, type: 'sms' | 'phone_change' = 'sms') {
+  async verifyOTP(
+    phone: string,
+    token: string,
+    type: "sms" | "phone_change" = "sms"
+  ) {
     try {
       const { data, error } = await supabase.auth.verifyOtp({
         phone,
         token,
-        type
-      })
-      return { data, error }
+        type,
+      });
+      return { data, error };
     } catch (error) {
-      console.error('VerifyOTP error:', error)
-      return { data: null, error: { message: 'Network error occurred while verifying OTP.' } }
+      console.error("VerifyOTP error:", error);
+      return {
+        data: null,
+        error: { message: "Network error occurred while verifying OTP." },
+      };
     }
   },
 
   // Verify OTP for email sign up
-  async verifyEmailOTP(email: string, token: string, type: 'signup' | 'email_change' = 'signup') {
+  async verifyEmailOTP(
+    email: string,
+    token: string,
+    type: "signup" | "email_change" = "signup"
+  ) {
     try {
       const { data, error } = await supabase.auth.verifyOtp({
         email,
         token,
-        type
-      })
-      return { data, error }
+        type,
+      });
+      return { data, error };
     } catch (error) {
-      console.error('VerifyEmailOTP error:', error)
-      return { data: null, error: { message: 'Network error occurred while verifying OTP.' } }
+      console.error("VerifyEmailOTP error:", error);
+      return {
+        data: null,
+        error: { message: "Network error occurred while verifying OTP." },
+      };
     }
-  }
-}
+  },
+};
 
 // Auth state change listener with error handling
-export const onAuthStateChange = (callback: (event: string, session: any) => void) => {
+export const onAuthStateChange = (
+  callback: (event: string, session: any) => void
+) => {
   try {
     return supabase.auth.onAuthStateChange((event, session) => {
       try {
-        callback(event, session)
+        callback(event, session);
       } catch (error) {
-        console.error('Error in auth state change callback:', error)
+        console.error("Error in auth state change callback:", error);
       }
-    })
+    });
   } catch (error) {
-    console.error('Error setting up auth state change listener:', error)
+    console.error("Error setting up auth state change listener:", error);
     // Return a dummy subscription that can be safely unsubscribed
     return {
       data: {
         subscription: {
-          unsubscribe: () => {}
-        }
-      }
-    }
+          unsubscribe: () => {},
+        },
+      },
+    };
   }
-}
+};
 
 // Utility functions
 export const utils = {
   // Check if string is email
   isEmail(str: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return emailRegex.test(str)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(str);
   },
 
   // Check if string is phone number
   isPhone(str: string): boolean {
-    const phoneRegex = /^[\+]?[\d\s\-\(\)]{10,}$/
-    return phoneRegex.test(str.replace(/\s/g, ''))
+    const phoneRegex = /^[\+]?[\d\s\-\(\)]{10,}$/;
+    return phoneRegex.test(str.replace(/\s/g, ""));
   },
 
   // Format phone number for Supabase (E.164 format)
   formatPhone(phone: string): string {
-    const cleaned = phone.replace(/\D/g, '')
+    const cleaned = phone.replace(/\D/g, "");
     if (cleaned.length === 10) {
-      return `+1${cleaned}` // Assume US number if 10 digits
+      return `+1${cleaned}`; // Assume US number if 10 digits
     }
-    if (cleaned.length === 11 && cleaned.startsWith('1')) {
-      return `+${cleaned}`
+    if (cleaned.length === 11 && cleaned.startsWith("1")) {
+      return `+${cleaned}`;
     }
-    return `+${cleaned}` // Assume international format
+    return `+${cleaned}`; // Assume international format
   },
 
   // Determine login method based on input
-  getLoginMethod(identifier: string): 'email' | 'phone' | 'username' {
-    if (this.isEmail(identifier)) return 'email'
-    if (this.isPhone(identifier)) return 'phone'
-    return 'username'
-  }
-}
+  getLoginMethod(identifier: string): "email" | "phone" | "username" {
+    if (this.isEmail(identifier)) return "email";
+    if (this.isPhone(identifier)) return "phone";
+    return "username";
+  },
+};
