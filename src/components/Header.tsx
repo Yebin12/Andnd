@@ -13,12 +13,12 @@ interface HeaderProps {
   onPostClick?: () => void;
 }
 
-export function Header({ 
-  onLogoClick, 
-  isAuthenticated = false, 
-  onAuthenticationComplete = () => {}, 
+export function Header({
+  onLogoClick,
+  isAuthenticated = false,
+  onAuthenticationComplete = () => {},
   onLogout = () => {},
-  onPostClick = () => {}
+  onPostClick = () => {},
 }: HeaderProps) {
   const [showSignInModal, setShowSignInModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -37,18 +37,18 @@ export function Header({
     <>
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div 
+          <div
             className="flex items-center gap-2 cursor-pointer hover:opacity-75 transition-opacity"
             onClick={onLogoClick}
           >
             <Heart className="w-6 h-6 text-primary" />
             <span className="font-medium">HelperHub</span>
           </div>
-          
+
           <div className="flex items-center gap-2">
             {isAuthenticated ? (
               <>
-                <Button 
+                <Button
                   className="bg-black hover:bg-gray-800 text-white rounded-full px-6"
                   onClick={onPostClick}
                 >
@@ -61,6 +61,12 @@ export function Header({
                 <Button variant="ghost" onClick={() => setShowLoginModal(true)}>
                   Log In
                 </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => (window.location.href = "/reset-password")}
+                >
+                  Reset Password
+                </Button>
                 <Button onClick={() => setShowSignInModal(true)}>
                   Sign In
                 </Button>
@@ -70,14 +76,14 @@ export function Header({
         </div>
       </header>
 
-      <SignInModal 
-        open={showSignInModal} 
+      <SignInModal
+        open={showSignInModal}
         onOpenChange={setShowSignInModal}
         onAuthenticationComplete={onAuthenticationComplete}
         onSwitchToLogin={handleSwitchToLogin}
       />
-      <LoginModal 
-        open={showLoginModal} 
+      <LoginModal
+        open={showLoginModal}
         onOpenChange={setShowLoginModal}
         onAuthenticationComplete={onAuthenticationComplete}
         onSwitchToSignUp={handleSwitchToSignIn}
