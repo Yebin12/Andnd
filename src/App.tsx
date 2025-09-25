@@ -11,7 +11,7 @@ import { ProfilePage } from "./components/ProfilePage";
 // Mock data for requests
 const mockRequests: Request[] = [
   {
-    id: "1",
+    id: "mock-1",
     title: "Need help moving furniture this weekend",
     description:
       "Looking for someone with a truck to help move a couch and dining table from my old apartment to my new place. Will provide pizza and drinks!\n\nI'm available Saturday or Sunday between 10 AM and 4 PM. The move is about 15 minutes between locations, and I can help with the heavy lifting. Just need someone with a pickup truck or van.\n\nPlease let me know if you're available and what you might charge for the help. Thanks!",
@@ -26,7 +26,7 @@ const mockRequests: Request[] = [
     ],
   },
   {
-    id: "2",
+    id: "mock-2",
     title: "Urgent: Cat stuck on apartment balcony",
     description:
       "My cat somehow got onto the balcony and can't get back in. I'm on the 3rd floor and need someone with a ladder or experience with animal rescue.\n\nThe cat seems scared and won't come to me. I think it might have jumped from a nearby tree. I don't have a ladder tall enough and I'm worried about the cat's safety.\n\nIf you have experience with animal rescue or have a tall ladder, please help! I can offer $50 for your assistance.",
@@ -41,7 +41,7 @@ const mockRequests: Request[] = [
     ],
   },
   {
-    id: "3",
+    id: "mock-3",
     title: "Tutoring needed for high school math",
     description:
       "My teenager is struggling with algebra and geometry. Looking for a patient tutor who can help 2-3 times per week after school.\n\nWe're looking for someone who can explain concepts clearly and help with homework. Sessions would be about 1-2 hours each, and we can work around your schedule.\n\nPayment is negotiable based on experience. References preferred but not required.",
@@ -53,7 +53,7 @@ const mockRequests: Request[] = [
     urgency: "no rush - whenever convenient",
   },
   {
-    id: "4",
+    id: "mock-4",
     title: "Garden cleanup before winter",
     description:
       "Need help trimming bushes, raking leaves, and preparing my garden for winter. Have all the tools, just need extra hands!\n\nThe yard is medium-sized and should take about 3-4 hours with two people working. I can provide lunch and drinks, plus $20/hour for the help.\n\nPreferably looking for help this weekend before the weather gets too cold.",
@@ -68,7 +68,7 @@ const mockRequests: Request[] = [
     ],
   },
   {
-    id: "5",
+    id: "mock-5",
     title: "Computer repair - won't start up",
     description:
       "My laptop suddenly stopped working and won't turn on. Need someone tech-savvy to diagnose and hopefully fix the issue.\n\nIt was working fine yesterday, but this morning it won't respond to the power button at all. I've tried different outlets and checked the power cord.\n\nI have important work files on it that I really need to recover. Can pay for diagnostic and repair services.",
@@ -83,7 +83,7 @@ const mockRequests: Request[] = [
     ],
   },
   {
-    id: "6",
+    id: "mock-6",
     title: "Ride needed to medical appointment",
     description:
       "I have a doctor's appointment tomorrow at 2 PM but my car is in the shop. Need a ride to and from the medical center.\n\nThe appointment is at Downtown Medical Center and should take about an hour. I live in the Medical District, so it's not too far.\n\nI can cover gas money and really appreciate any help. This is an important follow-up appointment that I can't reschedule.",
@@ -178,8 +178,9 @@ function AppContent() {
   };
 
   const handlePostSubmit = (newRequest: Request) => {
-    setAllRequests([newRequest, ...allRequests]);
-    setFilteredRequests([newRequest, ...allRequests]);
+    const updatedRequests = [newRequest, ...allRequests];
+    setAllRequests(updatedRequests);
+    setFilteredRequests(updatedRequests);
     setShowPostPage(false);
     setSearchQuery("");
     window.scrollTo(0, 0);

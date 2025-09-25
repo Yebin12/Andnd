@@ -6,6 +6,14 @@ import type {
   ProfilesResponse,
   UsernameAvailabilityResponse,
 } from "../types/profile";
+import type {
+  Post,
+  PostWithProfile,
+  PostFormData,
+  PostResponse,
+  PostsResponse,
+  PostsWithProfileResponse,
+} from "../types/post";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -492,6 +500,205 @@ export const profileHelpers = {
     } catch (error) {
       console.error("GetPreferences error:", error);
       return { data: null, error: { message: "Failed to fetch preferences" } };
+    }
+  },
+};
+
+// Post-related helper functions
+export const postHelpers = {
+  // Create a new post
+  async createPost(postData: PostFormData): Promise<PostResponse> {
+    try {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        return { data: null, error: { message: "User not authenticated" } };
+      }
+
+      const { data, error } = await supabase
+        .from("posts")
+        .insert({
+          ...postData,
+          user_id: user.id,
+        })
+        .select()
+        .single();
+
+      return { data, error };
+    } catch (error) {
+      console.error("CreatePost error:", error);
+      return { data: null, error: { message: "Failed to create post" } };
+    }
+  },
+
+  // Get all posts with user profiles
+  async getAllPosts(limit: number = 50): Promise<PostsWithProfileResponse> {
+    try {
+      const { data, error } = await supabase
+        .from("posts")
+        .select(
+          `
+          *,
+          profiles (
+            id,
+            username,
+            display_name,
+            avatar_url
+          )
+        `
+        )
+        .order("created_at", { ascending: false })
+        .limit(limit);
+
+      return { data, error };
+    } catch (error) {
+      console.error("GetAllPosts error:", error);
+      return { data: null, error: { message: "Failed to fetch posts" } };
+    }
+  },
+
+  // Get posts by user
+  async getUserPosts(userId: string): Promise<PostsResponse> {
+    try {
+      const { data, error } = await supabase
+        .from("posts")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+
+      return { data, error };
+    } catch (error) {
+      console.error("GetUserPosts error:", error);
+      return { data: null, error: { message: "Failed to fetch user posts" } };
+    }
+  },
+
+  // Get a single post by ID
+  async getPost(postId: string): Promise<PostResponse> {
+    try {
+      const { data, error } = await supabase
+        .from("posts")
+        .select(
+          `
+          *,
+          profiles (
+            id,
+            username,
+            display_name,
+            avatar_url
+          )
+        `
+        )
+        .eq("id", postId)
+        .single();
+
+      return { data, error };
+    } catch (error) {
+      console.error("GetPost error:", error);
+      return { data: null, error: { message: "Failed to fetch post" } };
+    }
+  },
+
+  // Update a post
+  async updatePost(
+    postId: string,
+    updates: Partial<PostFormData>
+  ): Promise<PostResponse> {
+    try {
+      const { data, error } = await supabase
+        .from("posts")
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", postId)
+        .select()
+        .single();
+
+      return { data, error };
+    } catch (error) {
+      console.error("UpdatePost error:", error);
+      return { data: null, error: { message: "Failed to update post" } };
+    }
+  },
+
+  // Delete a post
+  async deletePost(postId: string): Promise<{ error: any }> {
+    try {
+      const { error } = await supabase.from("posts").delete().eq("id", postId);
+
+      return { error };
+    } catch (error) {
+      console.error("DeletePost error:", error);
+      return { error: { message: "Failed to delete post" } };
+    }
+  },
+
+  // Search posts by location or name
+  async searchPosts(
+    query: string,
+    limit: number = 20
+  ): Promise<PostsWithProfileResponse> {
+    try {
+      const { data, error } = await supabase
+        .from("posts")
+        .select(
+          `
+          *,
+          profiles (
+            id,
+            username,
+            display_name,
+            avatar_url
+          )
+        `
+        )
+        .or(
+          `name.ilike.%${query}%,description.ilike.%${query}%,location.ilike.%${query}%`
+        )
+        .order("created_at", { ascending: false })
+        .limit(limit);
+
+      return { data, error };
+    } catch (error) {
+      console.error("SearchPosts error:", error);
+      return { data: null, error: { message: "Failed to search posts" } };
+    }
+  },
+
+  // Filter posts by paid/unpaid status
+  async getPostsByPaymentStatus(
+    isPaid: boolean,
+    limit: number = 50
+  ): Promise<PostsWithProfileResponse> {
+    try {
+      const { data, error } = await supabase
+        .from("posts")
+        .select(
+          `
+          *,
+          profiles (
+            id,
+            username,
+            display_name,
+            avatar_url
+          )
+        `
+        )
+        .eq("is_paid", isPaid)
+        .order("created_at", { ascending: false })
+        .limit(limit);
+
+      return { data, error };
+    } catch (error) {
+      console.error("GetPostsByPaymentStatus error:", error);
+      return {
+        data: null,
+        error: { message: "Failed to fetch posts by payment status" },
+      };
     }
   },
 };
