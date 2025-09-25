@@ -1,4 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
+import type {
+  Profile,
+  UserPreferences,
+  ProfileResponse,
+  ProfilesResponse,
+  UsernameAvailabilityResponse,
+} from "../types/profile";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -321,5 +328,170 @@ export const utils = {
     if (this.isEmail(identifier)) return "email";
     if (this.isPhone(identifier)) return "phone";
     return "username";
+  },
+};
+
+// Profile-related helper functions
+export const profileHelpers = {
+  // Get user profile
+  async getProfile(userId: string): Promise<ProfileResponse> {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select(
+          `
+          *,
+          user_preferences (*)
+        `
+        )
+        .eq("id", userId)
+        .single();
+      return { data, error };
+    } catch (error) {
+      console.error("GetProfile error:", error);
+      return { data: null, error: { message: "Failed to fetch profile" } };
+    }
+  },
+
+  // Update user profile
+  async updateProfile(
+    userId: string,
+    updates: Partial<Profile>
+  ): Promise<ProfileResponse> {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", userId)
+        .select()
+        .single();
+      return { data, error };
+    } catch (error) {
+      console.error("UpdateProfile error:", error);
+      return { data: null, error: { message: "Failed to update profile" } };
+    }
+  },
+
+  // Check username availability
+  async checkUsernameAvailability(
+    username: string,
+    excludeUserId?: string
+  ): Promise<UsernameAvailabilityResponse> {
+    try {
+      let query = supabase
+        .from("profiles")
+        .select("id")
+        .eq("username", username);
+
+      if (excludeUserId) {
+        query = query.neq("id", excludeUserId);
+      }
+
+      const { data, error } = await query;
+      return {
+        available: !data || data.length === 0,
+        error,
+      };
+    } catch (error) {
+      console.error("CheckUsername error:", error);
+      return {
+        available: false,
+        error: { message: "Failed to check username" },
+      };
+    }
+  },
+
+  // Upload avatar
+  async uploadAvatar(userId: string, file: File): Promise<ProfileResponse> {
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${userId}/avatar.${fileExt}`;
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(fileName, file, {
+          upsert: true,
+          contentType: file.type,
+        });
+
+      if (uploadError) throw uploadError;
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("avatars").getPublicUrl(fileName);
+
+      // Update profile with new avatar URL
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: publicUrl })
+        .eq("id", userId)
+        .select()
+        .single();
+
+      return { data: profileData, error: profileError };
+    } catch (error) {
+      console.error("UploadAvatar error:", error);
+      return { data: null, error: { message: "Failed to upload avatar" } };
+    }
+  },
+
+  // Search profiles
+  async searchProfiles(
+    query: string,
+    limit: number = 20
+  ): Promise<{ data: Partial<Profile>[] | null; error: any }> {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, username, display_name, avatar_url, bio")
+        .or(`username.ilike.%${query}%,display_name.ilike.%${query}%`)
+        .eq("profile_visibility", "public")
+        .limit(limit);
+      return { data, error };
+    } catch (error) {
+      console.error("SearchProfiles error:", error);
+      return { data: null, error: { message: "Failed to search profiles" } };
+    }
+  },
+
+  // Update user preferences
+  async updatePreferences(
+    userId: string,
+    preferences: Partial<UserPreferences>
+  ): Promise<{ data: UserPreferences | null; error: any }> {
+    try {
+      const { data, error } = await supabase
+        .from("user_preferences")
+        .upsert({
+          user_id: userId,
+          ...preferences,
+        })
+        .select()
+        .single();
+      return { data, error };
+    } catch (error) {
+      console.error("UpdatePreferences error:", error);
+      return { data: null, error: { message: "Failed to update preferences" } };
+    }
+  },
+
+  // Get user preferences
+  async getPreferences(
+    userId: string
+  ): Promise<{ data: UserPreferences | null; error: any }> {
+    try {
+      const { data, error } = await supabase
+        .from("user_preferences")
+        .select("*")
+        .eq("user_id", userId)
+        .single();
+      return { data, error };
+    } catch (error) {
+      console.error("GetPreferences error:", error);
+      return { data: null, error: { message: "Failed to fetch preferences" } };
+    }
   },
 };

@@ -6,6 +6,7 @@ import { RequestDetail } from "./components/RequestDetail";
 import { PostPage } from "./components/PostPage";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import ResetPasswordPage from "./components/ResetPasswordPage";
+import { ProfilePage } from "./components/ProfilePage";
 
 // Mock data for requests
 const mockRequests: Request[] = [
@@ -102,6 +103,7 @@ function AppContent() {
   const [filteredRequests, setFilteredRequests] = useState(mockRequests);
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
   const [showPostPage, setShowPostPage] = useState(false);
+  const [showProfilePage, setShowProfilePage] = useState(false);
   const [appReady, setAppReady] = useState(false);
 
   // Additional safety timeout in case auth loading gets stuck
@@ -143,6 +145,7 @@ function AppContent() {
   const handleBackToRequests = () => {
     setSelectedRequest(null);
     setShowPostPage(false);
+    setShowProfilePage(false);
     setSearchQuery("");
     setFilteredRequests(allRequests);
   };
@@ -163,6 +166,14 @@ function AppContent() {
   const handlePostClick = () => {
     setShowPostPage(true);
     setSelectedRequest(null);
+    setShowProfilePage(false);
+    window.scrollTo(0, 0);
+  };
+
+  const handleProfileClick = () => {
+    setShowProfilePage(true);
+    setSelectedRequest(null);
+    setShowPostPage(false);
     window.scrollTo(0, 0);
   };
 
@@ -194,6 +205,11 @@ function AppContent() {
     );
   }
 
+  // Show profile page
+  if (showProfilePage) {
+    return <ProfilePage onBack={handleBackToRequests} />;
+  }
+
   // Show post page
   if (showPostPage) {
     return (
@@ -217,6 +233,7 @@ function AppContent() {
         onAuthenticationComplete={handleAuthenticationComplete}
         onLogout={handleLogout}
         onPostClick={handlePostClick}
+        onProfileClick={handleProfileClick}
       />
 
       {/* Hero Section */}

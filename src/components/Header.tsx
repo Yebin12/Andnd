@@ -11,6 +11,7 @@ interface HeaderProps {
   onAuthenticationComplete?: () => void;
   onLogout?: () => void;
   onPostClick?: () => void;
+  onProfileClick?: () => void;
 }
 
 export function Header({
@@ -19,6 +20,7 @@ export function Header({
   onAuthenticationComplete = () => {},
   onLogout = () => {},
   onPostClick = () => {},
+  onProfileClick = () => {},
 }: HeaderProps) {
   const [showSignInModal, setShowSignInModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -54,7 +56,7 @@ export function Header({
                 >
                   Post
                 </Button>
-                <ProfileButton onLogout={onLogout} />
+                <ProfileButton onProfileClick={onProfileClick} />
               </>
             ) : (
               <>
