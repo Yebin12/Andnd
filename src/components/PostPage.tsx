@@ -197,6 +197,9 @@ export function PostPage({ onBack, onSubmit }: PostPageProps) {
             ? "Online/Remote"
             : location || "Location not specified",
         is_paid: willingToPay,
+        payment_type: willingToPay ? paymentType : undefined,
+        payment_amount:
+          willingToPay && paymentAmount ? parseFloat(paymentAmount) : undefined,
         photo_url: pictures.length > 0 ? pictures[0] : undefined, // Use first picture for now
       };
 

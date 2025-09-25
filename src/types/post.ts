@@ -7,6 +7,8 @@ export interface Post {
   photo_url?: string;
   location?: string;
   is_paid: boolean;
+  payment_type?: "hourly" | "total";
+  payment_amount?: number;
   user_id: string;
   created_at: string;
   updated_at: string;
@@ -28,6 +30,8 @@ export interface PostFormData {
   photo_url?: string;
   location?: string;
   is_paid: boolean;
+  payment_type?: "hourly" | "total";
+  payment_amount?: number;
 }
 
 // Legacy Request type mapping (for backward compatibility)
