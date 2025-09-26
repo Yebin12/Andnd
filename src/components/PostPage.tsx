@@ -28,6 +28,7 @@ import { Header } from "./Header";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { postHelpers } from "../lib/supabase";
 import type { PostFormData } from "../types/post";
+import { useAuth } from "../contexts/AuthContext";
 
 interface PostPageProps {
   onBack: () => void;
@@ -53,6 +54,7 @@ const AVAILABLE_CATEGORIES = [
 ];
 
 export function PostPage({ onBack, onSubmit }: PostPageProps) {
+  const { user } = useAuth();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -233,7 +235,10 @@ export function PostPage({ onBack, onSubmit }: PostPageProps) {
           location: savedPost.location || "Location not specified",
           locationType,
           timePosted: "Just now",
-          author: "You", // In real app, this would be the current user
+          author:
+            user?.user_metadata?.full_name ||
+            user?.email?.split("@")[0] ||
+            "User",
           urgency,
           pictures: pictures.length > 0 ? pictures : undefined,
           contactMethods,
