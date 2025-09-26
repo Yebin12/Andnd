@@ -53,19 +53,12 @@ export function Header({
             {isAuthenticated ? (
               <>
                 <Button
-                  variant="ghost"
-                  onClick={onPostManagementClick}
-                  className="text-sm"
-                >
-                  My Posts
-                </Button>
-                <Button
                   className="bg-black hover:bg-gray-800 text-white rounded-full px-6"
                   onClick={onPostClick}
                 >
                   Post
                 </Button>
-                <ProfileButton onProfileClick={onProfileClick} />
+                <ProfileButton onProfileClick={onPostManagementClick} />
               </>
             ) : (
               <>
