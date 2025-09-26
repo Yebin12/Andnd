@@ -15,6 +15,7 @@ interface PostManagementPageProps {
   savedRequests: string[];
   onUnsaveRequest: (requestId: string) => void;
   onEditProfile: () => void;
+  onUpdateRequest?: (requestId: string, updates: Partial<Request>) => void;
 }
 
 export function PostManagementPage({
@@ -24,6 +25,7 @@ export function PostManagementPage({
   savedRequests,
   onUnsaveRequest,
   onEditProfile,
+  onUpdateRequest,
 }: PostManagementPageProps) {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("posted");
@@ -51,11 +53,24 @@ export function PostManagementPage({
     }
   };
 
-  const handleEditPost = (request: Request) => {
+  const handleEditPostClick = (request: Request) => {
     // In a real app, this would open the edit form
     console.log("Edit post:", request.id);
     // For now, just show an alert
     alert("Edit functionality would open here");
+  };
+
+  const handleResolvePostClick = (requestId: string) => {
+    if (
+      window.confirm("Are you sure you want to mark this post as resolved?")
+    ) {
+      if (onUpdateRequest) {
+        onUpdateRequest(requestId, { resolved: true });
+      } else {
+        console.log("Resolve post:", requestId);
+        alert("Post marked as resolved");
+      }
+    }
   };
 
   const PostCard = ({
@@ -65,13 +80,27 @@ export function PostManagementPage({
     request: Request;
     showActions?: boolean;
   }) => (
-    <Card key={request.id} className="mb-4">
+    <Card
+      key={request.id}
+      className={`mb-4 ${request.resolved ? "opacity-60" : ""}`}
+    >
       <CardHeader className="pb-3">
         <div className="flex justify-between items-start">
           <div className="flex-1">
             <CardTitle className="text-lg mb-2">{request.title}</CardTitle>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Badge variant="secondary">{request.category}</Badge>
+              {request.resolved && (
+                <>
+                  <span>•</span>
+                  <Badge
+                    variant="outline"
+                    className="bg-green-50 text-green-700 border-green-300"
+                  >
+                    Resolved
+                  </Badge>
+                </>
+              )}
               <span>•</span>
               <span>{request.location}</span>
               <span>•</span>
@@ -82,20 +111,22 @@ export function PostManagementPage({
             {showActions ? (
               <>
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
-                  onClick={() => handleEditPost(request)}
-                  className="h-8 w-8"
+                  onClick={() => handleEditPostClick(request)}
+                  className="h-8 px-3 text-xs"
+                  disabled={request.resolved}
                 >
-                  <Edit2 className="h-4 w-4" />
+                  Edit
                 </Button>
                 <Button
-                  variant="ghost"
+                  variant={request.resolved ? "secondary" : "default"}
                   size="sm"
-                  onClick={() => handleDeletePost(request.id)}
-                  className="h-8 w-8 text-destructive hover:text-destructive"
+                  onClick={() => handleResolvePostClick(request.id)}
+                  className="h-8 px-3 text-xs"
+                  disabled={request.resolved}
                 >
-                  <Trash2 className="h-4 w-4" />
+                  {request.resolved ? "Resolved" : "Resolve"}
                 </Button>
               </>
             ) : (
