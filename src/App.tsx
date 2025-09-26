@@ -122,6 +122,26 @@ function AppContent() {
     }
   }, []);
 
+  // Load user-created posts from localStorage
+  useEffect(() => {
+    const userPosts = localStorage.getItem("userPosts");
+    if (userPosts) {
+      try {
+        const parsedUserPosts = JSON.parse(userPosts);
+        // Merge with mock data, avoiding duplicates
+        const existingIds = new Set(mockRequests.map((req) => req.id));
+        const newUserPosts = parsedUserPosts.filter(
+          (post: Request) => !existingIds.has(post.id)
+        );
+        const mergedRequests = [...newUserPosts, ...mockRequests];
+        setAllRequests(mergedRequests);
+        setFilteredRequests(mergedRequests);
+      } catch (error) {
+        console.error("Error loading user posts:", error);
+      }
+    }
+  }, []);
+
   // Additional safety timeout in case auth loading gets stuck
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -209,11 +229,17 @@ function AppContent() {
       setAllRequests(updatedRequests);
       setFilteredRequests(updatedRequests);
       setEditingPost(null);
+
+      // Save updated posts to localStorage
+      localStorage.setItem("userPosts", JSON.stringify(updatedRequests));
     } else {
       // Create new post
       const updatedRequests = [newRequest, ...allRequests];
       setAllRequests(updatedRequests);
       setFilteredRequests(updatedRequests);
+
+      // Save new posts to localStorage
+      localStorage.setItem("userPosts", JSON.stringify(updatedRequests));
     }
     setShowPostPage(false);
     setSearchQuery("");
@@ -258,6 +284,9 @@ function AppContent() {
     );
     setAllRequests(updatedRequests);
     setFilteredRequests(updatedRequests);
+
+    // Save updated posts to localStorage
+    localStorage.setItem("userPosts", JSON.stringify(updatedRequests));
   };
 
   // Reset password route (simple no-router handling)
