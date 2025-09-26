@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
-import { Clock, MapPin, User } from "lucide-react";
+import { Clock, MapPin, User, Bookmark } from "lucide-react";
 
 export interface Request {
   id: string;
@@ -23,9 +23,12 @@ export interface Request {
 interface RequestCardProps {
   request: Request;
   onSelect?: (request: Request) => void;
+  isSaved?: boolean;
+  onSave?: (requestId: string) => void;
+  onUnsave?: (requestId: string) => void;
 }
 
-export function RequestCard({ request, onSelect }: RequestCardProps) {
+export function RequestCard({ request, onSelect, isSaved = false, onSave, onUnsave }: RequestCardProps) {
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
       case "within today":
@@ -48,11 +51,30 @@ export function RequestCard({ request, onSelect }: RequestCardProps) {
         onClick={() => onSelect?.(request)}
       >
         <div className="space-y-4">
-          {/* Header with category and urgency */}
+          {/* Header with category and bookmark */}
           <div className="flex items-center justify-between">
             <Badge variant="outline" className="text-xs px-2 py-1 bg-gray-50 text-gray-600 border-transparent rounded-none">
               {request.category}
             </Badge>
+            {(onSave || onUnsave) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (isSaved && onUnsave) {
+                    onUnsave(request.id);
+                  } else if (!isSaved && onSave) {
+                    onSave(request.id);
+                  }
+                }}
+                className="h-8 w-8 p-0 hover:bg-gray-100"
+              >
+                <Bookmark 
+                  className={`h-4 w-4 ${isSaved ? 'fill-current text-blue-600' : 'text-gray-400'}`} 
+                />
+              </Button>
+            )}
           </div>
           
           {/* Title */}

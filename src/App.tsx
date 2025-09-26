@@ -7,6 +7,7 @@ import { PostPage } from "./components/PostPage";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import ResetPasswordPage from "./components/ResetPasswordPage";
 import { ProfilePage } from "./components/ProfilePage";
+import { PostManagementPage } from "./components/PostManagementPage";
 
 // Mock data for requests
 const mockRequests: Request[] = [
@@ -104,7 +105,21 @@ function AppContent() {
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
   const [showPostPage, setShowPostPage] = useState(false);
   const [showProfilePage, setShowProfilePage] = useState(false);
+  const [showPostManagementPage, setShowPostManagementPage] = useState(false);
+  const [savedRequests, setSavedRequests] = useState<string[]>([]);
   const [appReady, setAppReady] = useState(false);
+
+  // Load saved requests from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('savedRequests');
+    if (saved) {
+      try {
+        setSavedRequests(JSON.parse(saved));
+      } catch (error) {
+        console.error('Error loading saved requests:', error);
+      }
+    }
+  }, []);
 
   // Additional safety timeout in case auth loading gets stuck
   useEffect(() => {
@@ -146,6 +161,7 @@ function AppContent() {
     setSelectedRequest(null);
     setShowPostPage(false);
     setShowProfilePage(false);
+    setShowPostManagementPage(false);
     setSearchQuery("");
     setFilteredRequests(allRequests);
   };
@@ -167,6 +183,7 @@ function AppContent() {
     setShowPostPage(true);
     setSelectedRequest(null);
     setShowProfilePage(false);
+    setShowPostManagementPage(false);
     window.scrollTo(0, 0);
   };
 
@@ -174,6 +191,7 @@ function AppContent() {
     setShowProfilePage(true);
     setSelectedRequest(null);
     setShowPostPage(false);
+    setShowPostManagementPage(false);
     window.scrollTo(0, 0);
   };
 
@@ -184,6 +202,26 @@ function AppContent() {
     setShowPostPage(false);
     setSearchQuery("");
     window.scrollTo(0, 0);
+  };
+
+  const handlePostManagementClick = () => {
+    setShowPostManagementPage(true);
+    setSelectedRequest(null);
+    setShowPostPage(false);
+    setShowProfilePage(false);
+    window.scrollTo(0, 0);
+  };
+
+  const handleSaveRequest = (requestId: string) => {
+    const updatedSavedRequests = [...savedRequests, requestId];
+    setSavedRequests(updatedSavedRequests);
+    localStorage.setItem('savedRequests', JSON.stringify(updatedSavedRequests));
+  };
+
+  const handleUnsaveRequest = (requestId: string) => {
+    const updatedSavedRequests = savedRequests.filter(id => id !== requestId);
+    setSavedRequests(updatedSavedRequests);
+    localStorage.setItem('savedRequests', JSON.stringify(updatedSavedRequests));
   };
 
   // Reset password route (simple no-router handling)
@@ -211,6 +249,20 @@ function AppContent() {
     return <ProfilePage onBack={handleBackToRequests} />;
   }
 
+  // Show post management page
+  if (showPostManagementPage) {
+    return (
+      <PostManagementPage 
+        onBack={handleBackToRequests}
+        onSelectRequest={handleSelectRequest}
+        allRequests={allRequests}
+        savedRequests={savedRequests}
+        onUnsaveRequest={handleUnsaveRequest}
+        onEditProfile={handleProfileClick}
+      />
+    );
+  }
+
   // Show post page
   if (showPostPage) {
     return (
@@ -235,6 +287,7 @@ function AppContent() {
         onLogout={handleLogout}
         onPostClick={handlePostClick}
         onProfileClick={handleProfileClick}
+        onPostManagementClick={handlePostManagementClick}
       />
 
       {/* Hero Section */}
@@ -268,6 +321,9 @@ function AppContent() {
                 key={request.id}
                 request={request}
                 onSelect={handleSelectRequest}
+                isSaved={savedRequests.includes(request.id)}
+                onSave={handleSaveRequest}
+                onUnsave={handleUnsaveRequest}
               />
             ))}
           </div>

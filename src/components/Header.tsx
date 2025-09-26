@@ -12,6 +12,7 @@ interface HeaderProps {
   onLogout?: () => void;
   onPostClick?: () => void;
   onProfileClick?: () => void;
+  onPostManagementClick?: () => void;
 }
 
 export function Header({
@@ -21,6 +22,7 @@ export function Header({
   onLogout = () => {},
   onPostClick = () => {},
   onProfileClick = () => {},
+  onPostManagementClick = () => {},
 }: HeaderProps) {
   const [showSignInModal, setShowSignInModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -50,6 +52,13 @@ export function Header({
           <div className="flex items-center gap-2">
             {isAuthenticated ? (
               <>
+                <Button
+                  variant="ghost"
+                  onClick={onPostManagementClick}
+                  className="text-sm"
+                >
+                  My Posts
+                </Button>
                 <Button
                   className="bg-black hover:bg-gray-800 text-white rounded-full px-6"
                   onClick={onPostClick}
