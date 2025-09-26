@@ -16,6 +16,7 @@ interface PostManagementPageProps {
   onUnsaveRequest: (requestId: string) => void;
   onEditProfile: () => void;
   onUpdateRequest?: (requestId: string, updates: Partial<Request>) => void;
+  onEditPost?: (request: Request) => void;
 }
 
 export function PostManagementPage({
@@ -26,6 +27,7 @@ export function PostManagementPage({
   onUnsaveRequest,
   onEditProfile,
   onUpdateRequest,
+  onEditPost,
 }: PostManagementPageProps) {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("posted");
@@ -54,10 +56,12 @@ export function PostManagementPage({
   };
 
   const handleEditPostClick = (request: Request) => {
-    // In a real app, this would open the edit form
-    console.log("Edit post:", request.id);
-    // For now, just show an alert
-    alert("Edit functionality would open here");
+    if (onEditPost) {
+      onEditPost(request);
+    } else {
+      console.log("Edit post:", request.id);
+      alert("Edit functionality would open here");
+    }
   };
 
   const handleResolvePostClick = (requestId: string) => {

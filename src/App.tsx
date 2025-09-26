@@ -108,15 +108,16 @@ function AppContent() {
   const [showPostManagementPage, setShowPostManagementPage] = useState(false);
   const [savedRequests, setSavedRequests] = useState<string[]>([]);
   const [appReady, setAppReady] = useState(false);
+  const [editingPost, setEditingPost] = useState<Request | null>(null);
 
   // Load saved requests from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem('savedRequests');
+    const saved = localStorage.getItem("savedRequests");
     if (saved) {
       try {
         setSavedRequests(JSON.parse(saved));
       } catch (error) {
-        console.error('Error loading saved requests:', error);
+        console.error("Error loading saved requests:", error);
       }
     }
   }, []);
@@ -162,6 +163,7 @@ function AppContent() {
     setShowPostPage(false);
     setShowProfilePage(false);
     setShowPostManagementPage(false);
+    setEditingPost(null);
     setSearchQuery("");
     setFilteredRequests(allRequests);
   };
@@ -184,6 +186,7 @@ function AppContent() {
     setSelectedRequest(null);
     setShowProfilePage(false);
     setShowPostManagementPage(false);
+    setEditingPost(null);
     window.scrollTo(0, 0);
   };
 
@@ -196,9 +199,22 @@ function AppContent() {
   };
 
   const handlePostSubmit = (newRequest: Request) => {
-    const updatedRequests = [newRequest, ...allRequests];
-    setAllRequests(updatedRequests);
-    setFilteredRequests(updatedRequests);
+    if (editingPost) {
+      // Update existing post
+      const updatedRequests = allRequests.map((request) =>
+        request.id === editingPost.id
+          ? { ...newRequest, id: editingPost.id }
+          : request
+      );
+      setAllRequests(updatedRequests);
+      setFilteredRequests(updatedRequests);
+      setEditingPost(null);
+    } else {
+      // Create new post
+      const updatedRequests = [newRequest, ...allRequests];
+      setAllRequests(updatedRequests);
+      setFilteredRequests(updatedRequests);
+    }
     setShowPostPage(false);
     setSearchQuery("");
     window.scrollTo(0, 0);
@@ -215,13 +231,33 @@ function AppContent() {
   const handleSaveRequest = (requestId: string) => {
     const updatedSavedRequests = [...savedRequests, requestId];
     setSavedRequests(updatedSavedRequests);
-    localStorage.setItem('savedRequests', JSON.stringify(updatedSavedRequests));
+    localStorage.setItem("savedRequests", JSON.stringify(updatedSavedRequests));
   };
 
   const handleUnsaveRequest = (requestId: string) => {
-    const updatedSavedRequests = savedRequests.filter(id => id !== requestId);
+    const updatedSavedRequests = savedRequests.filter((id) => id !== requestId);
     setSavedRequests(updatedSavedRequests);
-    localStorage.setItem('savedRequests', JSON.stringify(updatedSavedRequests));
+    localStorage.setItem("savedRequests", JSON.stringify(updatedSavedRequests));
+  };
+
+  const handleEditPost = (request: Request) => {
+    setEditingPost(request);
+    setShowPostPage(true);
+    setShowPostManagementPage(false);
+    setSelectedRequest(null);
+    setShowProfilePage(false);
+    window.scrollTo(0, 0);
+  };
+
+  const handleUpdateRequest = (
+    requestId: string,
+    updates: Partial<Request>
+  ) => {
+    const updatedRequests = allRequests.map((request) =>
+      request.id === requestId ? { ...request, ...updates } : request
+    );
+    setAllRequests(updatedRequests);
+    setFilteredRequests(updatedRequests);
   };
 
   // Reset password route (simple no-router handling)
@@ -252,13 +288,15 @@ function AppContent() {
   // Show post management page
   if (showPostManagementPage) {
     return (
-      <PostManagementPage 
+      <PostManagementPage
         onBack={handleBackToRequests}
         onSelectRequest={handleSelectRequest}
         allRequests={allRequests}
         savedRequests={savedRequests}
         onUnsaveRequest={handleUnsaveRequest}
         onEditProfile={handleProfileClick}
+        onUpdateRequest={handleUpdateRequest}
+        onEditPost={handleEditPost}
       />
     );
   }
@@ -266,7 +304,11 @@ function AppContent() {
   // Show post page
   if (showPostPage) {
     return (
-      <PostPage onBack={handleBackToRequests} onSubmit={handlePostSubmit} />
+      <PostPage
+        onBack={handleBackToRequests}
+        onSubmit={handlePostSubmit}
+        existingPost={editingPost}
+      />
     );
   }
 

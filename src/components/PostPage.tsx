@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ArrowLeft,
   Camera,
@@ -33,6 +33,7 @@ import { useAuth } from "../contexts/AuthContext";
 interface PostPageProps {
   onBack: () => void;
   onSubmit: (request: any) => void;
+  existingPost?: any; // For editing existing posts
 }
 
 const AVAILABLE_CATEGORIES = [
@@ -53,7 +54,7 @@ const AVAILABLE_CATEGORIES = [
   "Other",
 ];
 
-export function PostPage({ onBack, onSubmit }: PostPageProps) {
+export function PostPage({ onBack, onSubmit, existingPost }: PostPageProps) {
   const { user } = useAuth();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -78,6 +79,25 @@ export function PostPage({ onBack, onSubmit }: PostPageProps) {
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+
+  // Populate form with existing post data when editing
+  useEffect(() => {
+    if (existingPost) {
+      setTitle(existingPost.title || "");
+      setDescription(existingPost.description || "");
+      setSelectedCategories(
+        existingPost.categories || [existingPost.category] || []
+      );
+      setPictures(existingPost.pictures || []);
+      setLocation(existingPost.location || "");
+      setEmailContact(existingPost.contactInfo || "");
+      setPhoneContact(existingPost.contactInfo || "");
+      setWillingToPay(existingPost.willingToPay || false);
+      setPaymentAmount(existingPost.paymentAmount || "");
+      setUrgency(existingPost.urgency || "within a week");
+      setLocationType(existingPost.locationType || "in-person");
+    }
+  }, [existingPost]);
 
   // Validation functions
   const validateEmail = (email: string): string => {
