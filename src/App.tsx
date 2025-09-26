@@ -297,6 +297,7 @@ function AppContent() {
         onEditProfile={handleProfileClick}
         onUpdateRequest={handleUpdateRequest}
         onEditPost={handleEditPost}
+        onCreatePost={handlePostClick}
       />
     );
   }

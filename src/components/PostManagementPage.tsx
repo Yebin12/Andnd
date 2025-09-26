@@ -17,6 +17,7 @@ interface PostManagementPageProps {
   onEditProfile: () => void;
   onUpdateRequest?: (requestId: string, updates: Partial<Request>) => void;
   onEditPost?: (request: Request) => void;
+  onCreatePost?: () => void;
 }
 
 export function PostManagementPage({
@@ -28,6 +29,7 @@ export function PostManagementPage({
   onEditProfile,
   onUpdateRequest,
   onEditPost,
+  onCreatePost,
 }: PostManagementPageProps) {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("posted");
@@ -283,7 +285,9 @@ export function PostManagementPage({
                     <p className="text-muted-foreground mb-4">
                       You haven't posted any requests yet.
                     </p>
-                    <Button onClick={onBack}>Create Your First Post</Button>
+                    <Button onClick={onCreatePost || onBack}>
+                      Create Your First Post
+                    </Button>
                   </CardContent>
                 </Card>
               ) : (
