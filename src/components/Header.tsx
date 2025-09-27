@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
-import { Heart, Menu } from "lucide-react";
+import { Heart, Menu, Plus } from "lucide-react";
 import { SignInModal } from "./SignInModal";
 import { LoginModal } from "./LoginModal";
 import { ProfileButton } from "./ProfileButton";
@@ -53,10 +53,18 @@ export function Header({
             {isAuthenticated ? (
               <>
                 <Button
-                  className="bg-black hover:bg-gray-800 text-white rounded-full px-6"
+                  className="bg-black hover:bg-gray-800 text-white rounded-full w-20"
                   onClick={onPostClick}
                 >
-                  Post
+                  <svg
+                    className="h-4 w-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                  >
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
                 </Button>
                 <ProfileButton onProfileClick={onPostManagementClick} />
               </>
