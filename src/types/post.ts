@@ -1,11 +1,22 @@
 // Post-related TypeScript types
 
+// Enhanced location data from Google Maps
+export interface LocationData {
+  lat: number;
+  lng: number;
+  address: string;
+}
+
 export interface Post {
   id: string;
   name: string;
   description: string;
   photo_url?: string;
-  location?: string;
+  location?: string; // Human-readable address
+  location_lat?: number; // Latitude coordinate
+  location_lng?: number; // Longitude coordinate
+  location_type?: "online" | "in-person"; // Type of location
+  location_radius?: number; // Search radius in miles
   is_paid: boolean;
   payment_type?: "hourly" | "total";
   payment_amount?: number;
@@ -28,7 +39,11 @@ export interface PostFormData {
   name: string;
   description: string;
   photo_url?: string;
-  location?: string;
+  location?: string; // Human-readable address
+  location_lat?: number; // Latitude coordinate
+  location_lng?: number; // Longitude coordinate
+  location_type?: "online" | "in-person"; // Type of location
+  location_radius?: number; // Search radius in miles
   is_paid: boolean;
   payment_type?: "hourly" | "total";
   payment_amount?: number;

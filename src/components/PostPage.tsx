@@ -346,6 +346,17 @@ export function PostPage({ onBack, onSubmit, existingPost }: PostPageProps) {
           locationType === "online"
             ? "Online/Remote"
             : selectedLocation?.address || location || "Location not specified",
+        // Enhanced location data for Google Maps integration
+        location_lat:
+          locationType === "in-person" && selectedLocation
+            ? selectedLocation.lat
+            : undefined,
+        location_lng:
+          locationType === "in-person" && selectedLocation
+            ? selectedLocation.lng
+            : undefined,
+        location_type: locationType,
+        location_radius: 5, // Default 5-mile radius for location-based searches
         is_paid: willingToPay,
         payment_type: willingToPay ? paymentType : undefined,
         payment_amount:

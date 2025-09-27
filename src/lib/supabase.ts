@@ -504,6 +504,26 @@ export const profileHelpers = {
   },
 };
 
+// Helper function to calculate distance between two coordinates (Haversine formula)
+function calculateDistance(
+  lat1: number,
+  lng1: number,
+  lat2: number,
+  lng2: number
+): number {
+  const R = 3959; // Earth's radius in miles
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
 // Post-related helper functions
 export const postHelpers = {
   // Create a new post
@@ -666,6 +686,104 @@ export const postHelpers = {
     } catch (error) {
       console.error("SearchPosts error:", error);
       return { data: null, error: { message: "Failed to search posts" } };
+    }
+  },
+
+  // Get posts near a specific location (using PostGIS for efficient spatial queries)
+  async getPostsNearLocation(
+    lat: number,
+    lng: number,
+    radiusMiles: number = 10,
+    limit: number = 50
+  ): Promise<PostsWithProfileResponse> {
+    try {
+      // Convert miles to meters (PostGIS ST_DWithin uses meters)
+      const radiusMeters = radiusMiles * 1609.34;
+
+      // Try to use the PostGIS RPC function first
+      const { data: spatialData, error: spatialError } = await supabase.rpc(
+        "get_posts_near_location",
+        {
+          search_lat: lat,
+          search_lng: lng,
+          radius_meters: radiusMeters,
+          result_limit: limit,
+        }
+      );
+
+      if (!spatialError && spatialData) {
+        return { data: spatialData, error: null };
+      }
+
+      console.log(
+        "PostGIS RPC not available, falling back to JavaScript calculation"
+      );
+
+      // Fallback to JavaScript distance calculation if PostGIS RPC fails
+      const { data, error } = await supabase
+        .from("posts")
+        .select(
+          `
+          *,
+          profiles (
+            id,
+            username,
+            display_name,
+            avatar_url
+          )
+        `
+        )
+        .not("location_lat", "is", null)
+        .not("location_lng", "is", null)
+        .eq("location_type", "in-person")
+        .order("created_at", { ascending: false })
+        .limit(limit * 2); // Get more results to filter
+
+      if (error) {
+        console.error("GetPostsNearLocation error:", error);
+        return { data: null, error };
+      }
+
+      // Filter by distance using JavaScript calculation
+      const filteredData = data?.filter((post) => {
+        if (!post.location_lat || !post.location_lng) return false;
+
+        const distance = calculateDistance(
+          lat,
+          lng,
+          post.location_lat,
+          post.location_lng
+        );
+
+        return distance <= radiusMiles;
+      });
+
+      // Sort by distance and limit results
+      const sortedData = filteredData
+        ?.sort((a, b) => {
+          const distanceA = calculateDistance(
+            lat,
+            lng,
+            a.location_lat,
+            a.location_lng
+          );
+          const distanceB = calculateDistance(
+            lat,
+            lng,
+            b.location_lat,
+            b.location_lng
+          );
+          return distanceA - distanceB;
+        })
+        .slice(0, limit);
+
+      return { data: sortedData || [], error: null };
+    } catch (error) {
+      console.error("GetPostsNearLocation error:", error);
+      return {
+        data: null,
+        error: { message: "Failed to get posts near location" },
+      };
     }
   },
 
