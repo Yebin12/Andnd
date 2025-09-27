@@ -17,6 +17,8 @@ export interface Post {
   location_lng?: number; // Longitude coordinate
   location_type?: "online" | "in-person"; // Type of location
   location_radius?: number; // Search radius in miles
+  location_privacy?: "exact" | "approximate" | "hidden"; // Location privacy level
+  show_exact_location?: boolean; // Whether to show exact coordinates
   is_paid: boolean;
   payment_type?: "hourly" | "total";
   payment_amount?: number;
@@ -44,6 +46,8 @@ export interface PostFormData {
   location_lng?: number; // Longitude coordinate
   location_type?: "online" | "in-person"; // Type of location
   location_radius?: number; // Search radius in miles
+  location_privacy?: "exact" | "approximate" | "hidden"; // Location privacy level
+  show_exact_location?: boolean; // Whether to show exact coordinates
   is_paid: boolean;
   payment_type?: "hourly" | "total";
   payment_amount?: number;
