@@ -7,6 +7,7 @@ import { Badge } from "./ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useAuth } from "../contexts/AuthContext";
 import { Request } from "./RequestCard";
+import { ConfirmModal } from "./ConfirmModal";
 
 interface PostManagementPageProps {
   onBack: () => void;
@@ -33,6 +34,8 @@ export function PostManagementPage({
 }: PostManagementPageProps) {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("posted");
+  const [showResolveModal, setShowResolveModal] = useState(false);
+  const [postToResolve, setPostToResolve] = useState<string | null>(null);
 
   // Filter requests posted by the current user
   const userPosts = allRequests.filter((request) => {
@@ -67,16 +70,25 @@ export function PostManagementPage({
   };
 
   const handleResolvePostClick = (requestId: string) => {
-    if (
-      window.confirm("Are you sure you want to mark this post as resolved?")
-    ) {
+    setPostToResolve(requestId);
+    setShowResolveModal(true);
+  };
+
+  const handleConfirmResolve = () => {
+    if (postToResolve) {
       if (onUpdateRequest) {
-        onUpdateRequest(requestId, { resolved: true });
+        onUpdateRequest(postToResolve, { resolved: true });
       } else {
-        console.log("Resolve post:", requestId);
+        console.log("Resolve post:", postToResolve);
         alert("Post marked as resolved");
       }
     }
+    setPostToResolve(null);
+  };
+
+  const handleCancelResolve = () => {
+    setPostToResolve(null);
+    setShowResolveModal(false);
   };
 
   const PostCard = ({
@@ -341,6 +353,18 @@ export function PostManagementPage({
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Resolve Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showResolveModal}
+        onClose={handleCancelResolve}
+        onConfirm={handleConfirmResolve}
+        title="Resolve Post"
+        description="Are you sure you want to mark this post as resolved? This action cannot be undone."
+        confirmText="Resolve"
+        cancelText="Cancel"
+        variant="default"
+      />
     </div>
   );
 }
