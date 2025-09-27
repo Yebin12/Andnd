@@ -29,6 +29,9 @@ import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { postHelpers } from "../lib/supabase";
 import type { PostFormData } from "../types/post";
 import { useAuth } from "../contexts/AuthContext";
+import { SaveDraftModal } from "./SaveDraftModal";
+import { ViewDraftModal } from "./ViewDraftModal";
+import { GoogleMapLocationPicker } from "./GoogleMapLocationPicker";
 
 interface PostPageProps {
   onBack: () => void;
@@ -61,6 +64,11 @@ export function PostPage({ onBack, onSubmit, existingPost }: PostPageProps) {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [pictures, setPictures] = useState<string[]>([]);
   const [location, setLocation] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState<{
+    lat: number;
+    lng: number;
+    address: string;
+  } | null>(null);
   const [emailContact, setEmailContact] = useState("");
   const [phoneContact, setPhoneContact] = useState("");
   const [emailError, setEmailError] = useState("");
@@ -80,6 +88,9 @@ export function PostPage({ onBack, onSubmit, existingPost }: PostPageProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [hasDraft, setHasDraft] = useState(false);
+  const [showSaveDraftModal, setShowSaveDraftModal] = useState(false);
+  const [showViewDraftModal, setShowViewDraftModal] = useState(false);
+  const [savedDrafts, setSavedDrafts] = useState<any[]>([]);
 
   // Check if there's current form content
   const hasFormContent =
@@ -88,6 +99,7 @@ export function PostPage({ onBack, onSubmit, existingPost }: PostPageProps) {
     selectedCategories.length > 0 ||
     pictures.length > 0 ||
     location ||
+    selectedLocation ||
     emailContact ||
     phoneContact;
 
@@ -110,10 +122,11 @@ export function PostPage({ onBack, onSubmit, existingPost }: PostPageProps) {
     }
   }, [existingPost]);
 
-  // Check for existing draft on component mount
+  // Check for existing drafts on component mount
   useEffect(() => {
-    const savedDraft = localStorage.getItem("postDraft");
-    setHasDraft(!!savedDraft);
+    const savedDrafts = JSON.parse(localStorage.getItem("postDrafts") || "[]");
+    setSavedDrafts(savedDrafts);
+    setHasDraft(savedDrafts.length > 0);
   }, []);
 
   // Validation functions
@@ -146,11 +159,13 @@ export function PostPage({ onBack, onSubmit, existingPost }: PostPageProps) {
   // Draft functions
   const saveDraft = () => {
     const draftData = {
+      id: Date.now().toString(), // Unique ID
       title,
       description,
       selectedCategories,
       pictures,
       location,
+      selectedLocation,
       emailContact,
       phoneContact,
       willingToPay,
@@ -161,53 +176,82 @@ export function PostPage({ onBack, onSubmit, existingPost }: PostPageProps) {
       timestamp: new Date().toISOString(),
     };
 
-    localStorage.setItem("postDraft", JSON.stringify(draftData));
+    // Get existing drafts
+    const existingDrafts = JSON.parse(
+      localStorage.getItem("postDrafts") || "[]"
+    );
+
+    // Add new draft
+    const updatedDrafts = [...existingDrafts, draftData];
+
+    // Save to localStorage
+    localStorage.setItem("postDrafts", JSON.stringify(updatedDrafts));
+    setSavedDrafts(updatedDrafts);
     setHasDraft(true);
   };
 
-  const loadDraft = () => {
-    const savedDraft = localStorage.getItem("postDraft");
-    if (savedDraft) {
-      const draftData = JSON.parse(savedDraft);
-      setTitle(draftData.title || "");
-      setDescription(draftData.description || "");
-      setSelectedCategories(draftData.selectedCategories || []);
-      setPictures(draftData.pictures || []);
-      setLocation(draftData.location || "");
-      setEmailContact(draftData.emailContact || "");
-      setPhoneContact(draftData.phoneContact || "");
-      setWillingToPay(draftData.willingToPay || false);
-      setPaymentType(draftData.paymentType || "total");
-      setPaymentAmount(draftData.paymentAmount || "");
-      setUrgency(draftData.urgency || "within a week");
-      setLocationType(draftData.locationType || "in-person");
-    }
+  const loadDraft = (draftData: any) => {
+    setTitle(draftData.title || "");
+    setDescription(draftData.description || "");
+    setSelectedCategories(draftData.selectedCategories || []);
+    setPictures(draftData.pictures || []);
+    setLocation(draftData.location || "");
+    setSelectedLocation(draftData.selectedLocation || null);
+    setEmailContact(draftData.emailContact || "");
+    setPhoneContact(draftData.phoneContact || "");
+    setWillingToPay(draftData.willingToPay || false);
+    setPaymentType(draftData.paymentType || "total");
+    setPaymentAmount(draftData.paymentAmount || "");
+    setUrgency(draftData.urgency || "within a week");
+    setLocationType(draftData.locationType || "in-person");
   };
 
-  const handleSaveDraft = () => {
-    saveDraft();
-    // You could add a toast notification here
-    console.log("Draft saved successfully");
-  };
-
-  const handleViewDraft = () => {
-    const savedDraft = localStorage.getItem("postDraft");
-
-    if (!savedDraft) {
-      alert("No saved draft found. Please save a draft first.");
-      return;
-    }
-
+  const handleLoadDraft = (draft: any) => {
     if (hasFormContent) {
       const confirmLoad = window.confirm(
         "Loading the draft will replace your current form content. Are you sure you want to continue?"
       );
       if (confirmLoad) {
-        loadDraft();
+        loadDraft(draft);
+        setShowViewDraftModal(false);
       }
     } else {
-      loadDraft();
+      loadDraft(draft);
+      setShowViewDraftModal(false);
     }
+  };
+
+  const handleDeleteDraft = (draftId: string) => {
+    const updatedDrafts = savedDrafts.filter((draft) => draft.id !== draftId);
+    localStorage.setItem("postDrafts", JSON.stringify(updatedDrafts));
+    setSavedDrafts(updatedDrafts);
+    setHasDraft(updatedDrafts.length > 0);
+  };
+
+  const handleSaveDraft = () => {
+    setShowSaveDraftModal(true);
+  };
+
+  const handleConfirmSaveDraft = () => {
+    saveDraft();
+    console.log("Draft saved successfully");
+  };
+
+  const handleCancelSaveDraft = () => {
+    // User cancelled saving draft - no action needed
+  };
+
+  const handleViewDraft = () => {
+    setShowViewDraftModal(true);
+  };
+
+  const handleLocationSelect = (locationData: {
+    lat: number;
+    lng: number;
+    address: string;
+  }) => {
+    setSelectedLocation(locationData);
+    setLocation(locationData.address);
   };
 
   const handleEmailBlur = () => {
@@ -301,7 +345,7 @@ export function PostPage({ onBack, onSubmit, existingPost }: PostPageProps) {
         location:
           locationType === "online"
             ? "Online/Remote"
-            : location || "Location not specified",
+            : selectedLocation?.address || location || "Location not specified",
         is_paid: willingToPay,
         payment_type: willingToPay ? paymentType : undefined,
         payment_amount:
@@ -337,6 +381,7 @@ export function PostPage({ onBack, onSubmit, existingPost }: PostPageProps) {
           category: selectedCategories[0], // Primary category
           categories: selectedCategories,
           location: savedPost.location || "Location not specified",
+          selectedLocation, // Include the full location data
           locationType,
           timePosted: "Just now",
           author:
@@ -361,8 +406,9 @@ export function PostPage({ onBack, onSubmit, existingPost }: PostPageProps) {
 
         onSubmit(newRequest);
 
-        // Clear draft after successful submission
-        localStorage.removeItem("postDraft");
+        // Clear drafts after successful submission
+        localStorage.removeItem("postDrafts");
+        setSavedDrafts([]);
         setHasDraft(false);
       }
     } catch (error) {
@@ -606,33 +652,11 @@ export function PostPage({ onBack, onSubmit, existingPost }: PostPageProps) {
 
               {/* In-person Location Input */}
               {locationType === "in-person" && (
-                <>
-                  <Input
-                    id="location"
-                    placeholder="Search for your location (e.g., 'Downtown District', '123 Main St')"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        (e.target as HTMLInputElement).blur();
-                      }
-                    }}
-                    className="w-full rounded-lg mb-4"
-                  />
-
-                  {/* Google Maps Placeholder */}
-                  <div className="w-full h-48 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center">
-                    <div className="text-center">
-                      <MapPin className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                      <p className="text-sm text-gray-600">
-                        Google Maps integration
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        Interactive map would appear here
-                      </p>
-                    </div>
-                  </div>
-                </>
+                <GoogleMapLocationPicker
+                  onLocationSelect={handleLocationSelect}
+                  initialLocation={selectedLocation}
+                  className="w-full"
+                />
               )}
 
               {/* Online Location Display */}
@@ -883,6 +907,23 @@ export function PostPage({ onBack, onSubmit, existingPost }: PostPageProps) {
           </div>
         </div>
       </div>
+
+      {/* Save Draft Modal */}
+      <SaveDraftModal
+        isOpen={showSaveDraftModal}
+        onClose={() => setShowSaveDraftModal(false)}
+        onConfirm={handleConfirmSaveDraft}
+        onCancel={handleCancelSaveDraft}
+      />
+
+      {/* View Draft Modal */}
+      <ViewDraftModal
+        isOpen={showViewDraftModal}
+        onClose={() => setShowViewDraftModal(false)}
+        onLoadDraft={handleLoadDraft}
+        onDeleteDraft={handleDeleteDraft}
+        drafts={savedDrafts}
+      />
     </div>
   );
 }
