@@ -453,27 +453,6 @@ export function GoogleMapLocationPicker({
         </APIProvider>
       </div>
 
-      {/* Selected Location Display */}
-      {currentLocation && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-          <div className="flex items-start gap-2">
-            <MapPin className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-            <div>
-              <p className="text-sm font-medium text-green-800">
-                Selected Location:
-              </p>
-              <p className="text-sm text-green-700">
-                {currentLocation.address}
-              </p>
-              <p className="text-xs text-green-600 mt-1">
-                Coordinates: {currentLocation.lat.toFixed(6)},{" "}
-                {currentLocation.lng.toFixed(6)}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Instructions */}
       <div className="text-xs text-gray-500 space-y-1">
         <p>• Click on the map to select a location</p>
