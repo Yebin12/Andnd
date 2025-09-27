@@ -15,6 +15,7 @@ import { Textarea } from "./ui/textarea";
 import { Request } from "./RequestCard";
 import { Header } from "./Header";
 import { PictureGallery } from "./PictureGallery";
+import { GoogleMapDisplay } from "./GoogleMapDisplay";
 import { useAuth } from "../contexts/AuthContext";
 
 interface RequestDetailProps {
@@ -168,21 +169,27 @@ export function RequestDetail({
               <Card className="rounded-none border-gray-200">
                 <CardContent className="p-6">
                   <h3 className="text-lg font-medium mb-4">Location</h3>
-                  <div className="w-full h-64 rounded-lg overflow-hidden border bg-gray-50 flex items-center justify-center">
-                    <div className="text-center">
-                      <MapPin className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                      <p className="text-sm text-gray-600 font-medium">
-                        {request.location}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Interactive map would appear here
-                      </p>
+                  <GoogleMapDisplay
+                    location={request.location}
+                    locationData={request.selectedLocation}
+                    locationLat={request.location_lat}
+                    locationLng={request.location_lng}
+                    locationPrivacy={request.location_privacy}
+                    showExactLocation={request.show_exact_location}
+                    className="mb-4"
+                  />
+                  <div className="text-sm text-gray-600">
+                    <div className="flex items-center gap-2 mb-2">
+                      <MapPin className="w-4 h-4" />
+                      <span className="font-medium">Address:</span>
                     </div>
+                    <p className="ml-6">{request.location}</p>
+                    {request.location_radius && (
+                      <p className="ml-6 text-xs text-gray-500 mt-1">
+                        Search radius: {request.location_radius} miles
+                      </p>
+                    )}
                   </div>
-                  <p className="text-sm text-gray-600 mt-2">
-                    <MapPin className="w-4 h-4 inline mr-1" />
-                    {request.location}
-                  </p>
                 </CardContent>
               </Card>
             )}

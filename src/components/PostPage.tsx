@@ -357,6 +357,8 @@ export function PostPage({ onBack, onSubmit, existingPost }: PostPageProps) {
             : undefined,
         location_type: locationType,
         location_radius: 5, // Default 5-mile radius for location-based searches
+        location_privacy: "approximate", // Default to approximate for privacy
+        show_exact_location: true, // Allow showing exact location on map
         is_paid: willingToPay,
         payment_type: willingToPay ? paymentType : undefined,
         payment_amount:
@@ -392,8 +394,14 @@ export function PostPage({ onBack, onSubmit, existingPost }: PostPageProps) {
           category: selectedCategories[0], // Primary category
           categories: selectedCategories,
           location: savedPost.location || "Location not specified",
-          selectedLocation, // Include the full location data
           locationType,
+          // Enhanced location data from Google Maps
+          location_lat: savedPost.location_lat,
+          location_lng: savedPost.location_lng,
+          location_radius: savedPost.location_radius,
+          location_privacy: savedPost.location_privacy,
+          show_exact_location: savedPost.show_exact_location,
+          selectedLocation, // Include the full location data
           timePosted: "Just now",
           author:
             profile?.display_name ||

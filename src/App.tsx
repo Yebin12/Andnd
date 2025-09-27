@@ -17,8 +17,14 @@ const mockRequests: Request[] = [
     description:
       "Looking for someone with a truck to help move a couch and dining table from my old apartment to my new place. Will provide pizza and drinks!\n\nI'm available Saturday or Sunday between 10 AM and 4 PM. The move is about 15 minutes between locations, and I can help with the heavy lifting. Just need someone with a pickup truck or van.\n\nPlease let me know if you're available and what you might charge for the help. Thanks!",
     category: "Moving",
-    location: "Downtown District",
+    location: "Downtown District, San Francisco, CA",
     locationType: "in-person",
+    // Sample location data for testing Google Maps
+    location_lat: 37.7749,
+    location_lng: -122.4194,
+    location_radius: 5,
+    location_privacy: "approximate",
+    show_exact_location: true,
     timePosted: "2 hours ago",
     author: "Sarah M.",
     urgency: "within 2-3 days",
@@ -32,8 +38,14 @@ const mockRequests: Request[] = [
     description:
       "My cat somehow got onto the balcony and can't get back in. I'm on the 3rd floor and need someone with a ladder or experience with animal rescue.\n\nThe cat seems scared and won't come to me. I think it might have jumped from a nearby tree. I don't have a ladder tall enough and I'm worried about the cat's safety.\n\nIf you have experience with animal rescue or have a tall ladder, please help! I can offer $50 for your assistance.",
     category: "Pet Care",
-    location: "Riverside Area",
+    location: "Riverside Area, Oakland, CA",
     locationType: "in-person",
+    // Sample location data for testing Google Maps
+    location_lat: 37.8044,
+    location_lng: -122.2712,
+    location_radius: 3,
+    location_privacy: "approximate",
+    show_exact_location: true,
     timePosted: "30 minutes ago",
     author: "Mike T.",
     urgency: "within today",

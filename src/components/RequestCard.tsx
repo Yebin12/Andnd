@@ -3,6 +3,13 @@ import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Clock, MapPin, User, Bookmark } from "lucide-react";
 
+// Enhanced location data from Google Maps
+export interface LocationData {
+  lat: number;
+  lng: number;
+  address: string;
+}
+
 export interface Request {
   id: string;
   title: string;
@@ -11,6 +18,13 @@ export interface Request {
   categories?: string[];
   location: string;
   locationType?: "online" | "in-person";
+  // Enhanced location data from Google Maps
+  location_lat?: number; // Latitude coordinate
+  location_lng?: number; // Longitude coordinate
+  location_radius?: number; // Search radius in miles
+  location_privacy?: "exact" | "approximate" | "hidden"; // Location privacy level
+  show_exact_location?: boolean; // Whether to show exact coordinates
+  selectedLocation?: LocationData | null; // Full location data from Google Maps
   timePosted: string;
   author: string;
   urgency:
