@@ -13,6 +13,7 @@ interface LocationData {
 interface GoogleMapLocationPickerProps {
   onLocationSelect: (location: LocationData) => void;
   initialLocation?: LocationData | null;
+  onSearchQueryChange?: (query: string) => void;
   className?: string;
 }
 
@@ -67,6 +68,7 @@ function MapController({
 export function GoogleMapLocationPicker({
   onLocationSelect,
   initialLocation,
+  onSearchQueryChange,
   className = "",
 }: GoogleMapLocationPickerProps) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -229,7 +231,10 @@ export function GoogleMapLocationPicker({
             <Input
               placeholder="Search for a location..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                onSearchQueryChange?.(e.target.value);
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   handleSearch();
@@ -287,7 +292,7 @@ export function GoogleMapLocationPicker({
 
       {/* Map */}
       <div className="w-full h-64 sm:h-72 md:h-80 border border-gray-200 rounded-lg overflow-hidden">
-        <APIProvider apiKey={apiKey}>
+        <APIProvider apiKey={apiKey} libraries={["places"]}>
           <Map
             key={`${mapCenter.lat}-${mapCenter.lng}`}
             center={mapCenter}

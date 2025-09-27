@@ -32,6 +32,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { SaveDraftModal } from "./SaveDraftModal";
 import { ViewDraftModal } from "./ViewDraftModal";
 import { GoogleMapLocationPicker } from "./GoogleMapLocationPicker";
+import { GooglePlacesSuggestions } from "./GooglePlacesSuggestions";
 
 interface PostPageProps {
   onBack: () => void;
@@ -69,6 +70,7 @@ export function PostPage({ onBack, onSubmit, existingPost }: PostPageProps) {
     lng: number;
     address: string;
   } | null>(null);
+  const [locationSearchQuery, setLocationSearchQuery] = useState("");
   const [emailContact, setEmailContact] = useState("");
   const [phoneContact, setPhoneContact] = useState("");
   const [emailError, setEmailError] = useState("");
@@ -252,6 +254,7 @@ export function PostPage({ onBack, onSubmit, existingPost }: PostPageProps) {
   }) => {
     setSelectedLocation(locationData);
     setLocation(locationData.address);
+    setLocationSearchQuery(""); // Clear search query when location is selected
   };
 
   const handleEmailBlur = () => {
@@ -671,11 +674,21 @@ export function PostPage({ onBack, onSubmit, existingPost }: PostPageProps) {
 
               {/* In-person Location Input */}
               {locationType === "in-person" && (
-                <GoogleMapLocationPicker
-                  onLocationSelect={handleLocationSelect}
-                  initialLocation={selectedLocation}
-                  className="w-full"
-                />
+                <div className="w-full">
+                  <GoogleMapLocationPicker
+                    onLocationSelect={handleLocationSelect}
+                    initialLocation={selectedLocation}
+                    onSearchQueryChange={setLocationSearchQuery}
+                    className="w-full"
+                  />
+
+                  {/* Google Places Suggestions */}
+                  <GooglePlacesSuggestions
+                    searchQuery={locationSearchQuery}
+                    onLocationSelect={handleLocationSelect}
+                    className="w-full"
+                  />
+                </div>
               )}
 
               {/* Online Location Display */}
