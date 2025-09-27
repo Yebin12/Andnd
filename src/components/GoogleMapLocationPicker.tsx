@@ -351,33 +351,20 @@ export function GoogleMapLocationPicker({
                     suggestions.map((suggestion) => (
                       <div
                         key={suggestion.placeId}
-                        className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                        className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
                         onClick={() => handleSuggestionSelect(suggestion)}
                       >
-                        <div
-                          className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs flex-shrink-0"
-                          style={{ backgroundColor: suggestion.color }}
-                        >
-                          {suggestion.icon}
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-sm truncate">
+                            {suggestion.name}
+                          </span>
+                          {suggestion.isPopular && (
+                            <Star className="w-3 h-3 text-yellow-500 fill-current flex-shrink-0" />
+                          )}
                         </div>
-
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium text-sm truncate">
-                              {suggestion.name}
-                            </span>
-                            {suggestion.isPopular && (
-                              <Star className="w-3 h-3 text-yellow-500 fill-current flex-shrink-0" />
-                            )}
-                          </div>
-                          <p className="text-xs text-gray-600 truncate">
-                            {suggestion.address}
-                          </p>
-                        </div>
-
-                        <div className="flex-shrink-0">
-                          <MapPin className="w-4 h-4 text-gray-400" />
-                        </div>
+                        <p className="text-xs text-gray-600 truncate">
+                          {suggestion.address}
+                        </p>
                       </div>
                     ))}
 
