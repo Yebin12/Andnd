@@ -79,6 +79,7 @@ export function PostPage({ onBack, onSubmit, existingPost }: PostPageProps) {
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [hasDraft, setHasDraft] = useState(false);
 
   // Populate form with existing post data when editing
   useEffect(() => {
@@ -98,6 +99,12 @@ export function PostPage({ onBack, onSubmit, existingPost }: PostPageProps) {
       setLocationType(existingPost.locationType || "in-person");
     }
   }, [existingPost]);
+
+  // Check for existing draft on component mount
+  useEffect(() => {
+    const savedDraft = localStorage.getItem("postDraft");
+    setHasDraft(!!savedDraft);
+  }, []);
 
   // Validation functions
   const validateEmail = (email: string): string => {
@@ -124,6 +131,76 @@ export function PostPage({ onBack, onSubmit, existingPost }: PostPageProps) {
     }
 
     return "";
+  };
+
+  // Draft functions
+  const saveDraft = () => {
+    const draftData = {
+      title,
+      description,
+      selectedCategories,
+      pictures,
+      location,
+      emailContact,
+      phoneContact,
+      willingToPay,
+      paymentType,
+      paymentAmount,
+      urgency,
+      locationType,
+      timestamp: new Date().toISOString(),
+    };
+
+    localStorage.setItem("postDraft", JSON.stringify(draftData));
+    setHasDraft(true);
+  };
+
+  const loadDraft = () => {
+    const savedDraft = localStorage.getItem("postDraft");
+    if (savedDraft) {
+      const draftData = JSON.parse(savedDraft);
+      setTitle(draftData.title || "");
+      setDescription(draftData.description || "");
+      setSelectedCategories(draftData.selectedCategories || []);
+      setPictures(draftData.pictures || []);
+      setLocation(draftData.location || "");
+      setEmailContact(draftData.emailContact || "");
+      setPhoneContact(draftData.phoneContact || "");
+      setWillingToPay(draftData.willingToPay || false);
+      setPaymentType(draftData.paymentType || "total");
+      setPaymentAmount(draftData.paymentAmount || "");
+      setUrgency(draftData.urgency || "within a week");
+      setLocationType(draftData.locationType || "in-person");
+    }
+  };
+
+  const handleSaveDraft = () => {
+    saveDraft();
+    // You could add a toast notification here
+    console.log("Draft saved successfully");
+  };
+
+  const handleViewDraft = () => {
+    // Check if current form has content
+    const hasContent =
+      title ||
+      description ||
+      selectedCategories.length > 0 ||
+      pictures.length > 0 ||
+      location ||
+      emailContact ||
+      phoneContact;
+
+    if (hasContent) {
+      const confirmLoad = window.confirm(
+        "Loading the draft will replace your current form content. Are you sure you want to continue?"
+      );
+      if (confirmLoad) {
+        loadDraft();
+      }
+    } else {
+      loadDraft();
+    }
   };
 
   const handleEmailBlur = () => {
@@ -276,6 +353,10 @@ export function PostPage({ onBack, onSubmit, existingPost }: PostPageProps) {
         };
 
         onSubmit(newRequest);
+
+        // Clear draft after successful submission
+        localStorage.removeItem("postDraft");
+        setHasDraft(false);
       }
     } catch (error) {
       console.error("Error submitting post:", error);
@@ -291,11 +372,29 @@ export function PostPage({ onBack, onSubmit, existingPost }: PostPageProps) {
 
       {/* Breadcrumb */}
       <div className="border-b bg-background/95">
-        <div className="container mx-auto px-4 h-12 flex items-center">
+        <div className="container mx-auto px-4 h-12 flex items-center justify-between">
           <Button variant="ghost" onClick={onBack} className="rounded-full">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Home
           </Button>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={handleViewDraft}
+              className="rounded-full"
+              disabled={!hasDraft}
+            >
+              View Draft
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleSaveDraft}
+              className="rounded-full"
+            >
+              Save Draft
+            </Button>
+          </div>
         </div>
       </div>
 
