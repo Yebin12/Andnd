@@ -45,24 +45,24 @@ export function ConfirmModal({
             {description}
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-3 mt-6">
+        <div className="flex gap-3 mt-6">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            className="flex-1 h-12 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-full border-gray-200"
+          >
+            {cancelText}
+          </Button>
           <Button
             variant={variant === "destructive" ? "destructive" : "default"}
             onClick={handleConfirm}
-            className={`w-full h-12 text-white rounded-full text-base font-medium transition-all ${
+            className={`flex-1 h-12 text-white rounded-full text-base font-medium transition-all ${
               variant === "destructive"
                 ? "bg-red-600 hover:bg-red-700"
                 : "bg-gray-700 hover:bg-gray-800"
             }`}
           >
             {confirmText}
-          </Button>
-          <Button
-            variant="outline"
-            onClick={onClose}
-            className="w-full h-12 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-full border-gray-200"
-          >
-            {cancelText}
           </Button>
         </div>
       </DialogContent>
