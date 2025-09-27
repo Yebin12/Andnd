@@ -2,7 +2,12 @@ import React, { useState, useEffect, useCallback } from "react";
 import { APIProvider, Map, Marker, useMap } from "@vis.gl/react-google-maps";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { MapPin, Navigation, Search, X } from "lucide-react";
+import { MapPin, Navigation, Search, X, Star, Loader2 } from "lucide-react";
+import {
+  searchGooglePlaces,
+  createDebouncedSearch,
+  type GooglePlaceSuggestion,
+} from "../lib/googlePlacesService";
 
 interface LocationData {
   lat: number;
@@ -76,11 +81,74 @@ export function GoogleMapLocationPicker({
     initialLocation || null
   );
   const [isLoading, setIsLoading] = useState(false);
+
+  // Dropdown suggestions state
+  const [suggestions, setSuggestions] = useState<GooglePlaceSuggestion[]>([]);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Create debounced search function for suggestions
+  const debouncedSearch = useCallback(
+    createDebouncedSearch(searchGooglePlaces, 300),
+    []
+  );
   const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number }>({
     lat: 37.7749, // Default to San Francisco
     lng: -122.4194,
   });
+
+  // Handle search suggestions
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      setIsLoadingSuggestions(false);
+      setError(null);
+      return;
+    }
+
+    // Only search if query is at least 2 characters
+    if (searchQuery.trim().length < 2) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    setIsLoadingSuggestions(true);
+    setError(null);
+    setShowSuggestions(true);
+
+    debouncedSearch(searchQuery)
+      .then((results) => {
+        setSuggestions(results);
+        setIsLoadingSuggestions(false);
+      })
+      .catch((err) => {
+        console.error("Search error:", err);
+        setError("Failed to search locations. Please try again.");
+        setIsLoadingSuggestions(false);
+      });
+  }, [searchQuery, debouncedSearch]);
+
+  // Handle suggestion selection
+  const handleSuggestionSelect = useCallback(
+    (suggestion: GooglePlaceSuggestion) => {
+      const locationData: LocationData = {
+        lat: suggestion.lat,
+        lng: suggestion.lng,
+        address: suggestion.address,
+      };
+
+      setCurrentLocation(locationData);
+      setMapCenter({ lat: suggestion.lat, lng: suggestion.lng });
+      setSearchQuery(suggestion.address);
+      setShowSuggestions(false);
+      setSuggestions([]);
+      onLocationSelect(locationData);
+    },
+    [onLocationSelect]
+  );
 
   // Get user's current location
   const getCurrentLocation = useCallback(() => {
@@ -226,7 +294,7 @@ export function GoogleMapLocationPicker({
       {/* Search and Controls */}
       <div className="space-y-3">
         <div className="flex gap-2">
-          <div className="flex-1 relative">
+          <div className="flex-1 relative w-full min-w-0">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               placeholder="Search for a location..."
@@ -240,8 +308,89 @@ export function GoogleMapLocationPicker({
                   handleSearch();
                 }
               }}
+              onFocus={() => {
+                if (suggestions.length > 0) {
+                  setShowSuggestions(true);
+                }
+              }}
+              onBlur={() => {
+                // Delay hiding suggestions to allow clicking on them
+                setTimeout(() => setShowSuggestions(false), 200);
+              }}
               className="pl-10 rounded-lg"
             />
+
+            {/* Dropdown Suggestions */}
+            {showSuggestions &&
+              (suggestions.length > 0 || isLoadingSuggestions || error) && (
+                <div
+                  className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto"
+                  style={{
+                    width: "100%",
+                    minWidth: "100%",
+                    right: 0,
+                  }}
+                >
+                  {isLoadingSuggestions && (
+                    <div className="flex items-center justify-center py-3 px-4">
+                      <Loader2 className="w-4 h-4 animate-spin text-blue-500 mr-2" />
+                      <span className="text-sm text-gray-600">
+                        Searching...
+                      </span>
+                    </div>
+                  )}
+
+                  {error && (
+                    <div className="px-4 py-3 text-sm text-red-600 border-b border-gray-100">
+                      {error}
+                    </div>
+                  )}
+
+                  {!isLoadingSuggestions &&
+                    !error &&
+                    suggestions.map((suggestion) => (
+                      <div
+                        key={suggestion.placeId}
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                        onClick={() => handleSuggestionSelect(suggestion)}
+                      >
+                        <div
+                          className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs flex-shrink-0"
+                          style={{ backgroundColor: suggestion.color }}
+                        >
+                          {suggestion.icon}
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-sm truncate">
+                              {suggestion.name}
+                            </span>
+                            {suggestion.isPopular && (
+                              <Star className="w-3 h-3 text-yellow-500 fill-current flex-shrink-0" />
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-600 truncate">
+                            {suggestion.address}
+                          </p>
+                        </div>
+
+                        <div className="flex-shrink-0">
+                          <MapPin className="w-4 h-4 text-gray-400" />
+                        </div>
+                      </div>
+                    ))}
+
+                  {!isLoadingSuggestions &&
+                    !error &&
+                    suggestions.length === 0 &&
+                    searchQuery.length >= 2 && (
+                      <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                        No locations found for "{searchQuery}"
+                      </div>
+                    )}
+                </div>
+              )}
           </div>
           <Button
             onClick={handleSearch}

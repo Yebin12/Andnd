@@ -32,7 +32,6 @@ import { useAuth } from "../contexts/AuthContext";
 import { SaveDraftModal } from "./SaveDraftModal";
 import { ViewDraftModal } from "./ViewDraftModal";
 import { GoogleMapLocationPicker } from "./GoogleMapLocationPicker";
-import { GooglePlacesSuggestions } from "./GooglePlacesSuggestions";
 
 interface PostPageProps {
   onBack: () => void;
@@ -679,13 +678,6 @@ export function PostPage({ onBack, onSubmit, existingPost }: PostPageProps) {
                     onLocationSelect={handleLocationSelect}
                     initialLocation={selectedLocation}
                     onSearchQueryChange={setLocationSearchQuery}
-                    className="w-full"
-                  />
-
-                  {/* Google Places Suggestions */}
-                  <GooglePlacesSuggestions
-                    searchQuery={locationSearchQuery}
-                    onLocationSelect={handleLocationSelect}
                     className="w-full"
                   />
                 </div>
