@@ -345,7 +345,12 @@ function AppContent() {
   // Show request detail page if a request is selected
   if (selectedRequest) {
     return (
-      <RequestDetail request={selectedRequest} onBack={handleBackToRequests} />
+      <RequestDetail
+        request={selectedRequest}
+        onBack={handleBackToRequests}
+        onPostClick={handlePostClick}
+        onPostManagementClick={handlePostManagementClick}
+      />
     );
   }
 

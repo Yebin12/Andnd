@@ -1,4 +1,13 @@
-import { ArrowLeft, Clock, MapPin, User, Phone, Mail, MessageCircle, Camera } from "lucide-react";
+import {
+  ArrowLeft,
+  Clock,
+  MapPin,
+  User,
+  Phone,
+  Mail,
+  MessageCircle,
+  Camera,
+} from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Card, CardContent } from "./ui/card";
@@ -6,13 +15,22 @@ import { Textarea } from "./ui/textarea";
 import { Request } from "./RequestCard";
 import { Header } from "./Header";
 import { PictureGallery } from "./PictureGallery";
+import { useAuth } from "../contexts/AuthContext";
 
 interface RequestDetailProps {
   request: Request;
   onBack: () => void;
+  onPostClick?: () => void;
+  onPostManagementClick?: () => void;
 }
 
-export function RequestDetail({ request, onBack }: RequestDetailProps) {
+export function RequestDetail({
+  request,
+  onBack,
+  onPostClick,
+  onPostManagementClick,
+}: RequestDetailProps) {
+  const { user } = useAuth();
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
       case "high":
@@ -29,16 +47,17 @@ export function RequestDetail({ request, onBack }: RequestDetailProps) {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <Header onLogoClick={onBack} />
-      
+      <Header
+        onLogoClick={onBack}
+        isAuthenticated={!!user}
+        onPostClick={onPostClick}
+        onPostManagementClick={onPostManagementClick}
+      />
+
       {/* Breadcrumb */}
       <div className="border-b bg-background/95">
         <div className="container mx-auto px-4 h-12 flex items-center">
-          <Button 
-            variant="ghost" 
-            onClick={onBack}
-            className="rounded-full"
-          >
+          <Button variant="ghost" onClick={onBack} className="rounded-full">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Requests
           </Button>
@@ -55,7 +74,10 @@ export function RequestDetail({ request, onBack }: RequestDetailProps) {
                 <div className="space-y-4">
                   {/* Category and Urgency */}
                   <div className="flex items-center justify-between">
-                    <Badge variant="outline" className="text-xs px-3 py-1 bg-gray-50 text-gray-600 border-transparent rounded-none">
+                    <Badge
+                      variant="outline"
+                      className="text-xs px-3 py-1 bg-gray-50 text-gray-600 border-transparent rounded-none"
+                    >
                       {request.category}
                     </Badge>
                   </div>
@@ -104,7 +126,10 @@ export function RequestDetail({ request, onBack }: RequestDetailProps) {
                       Pictures ({request.pictures.length})
                     </h3>
                   </div>
-                  <PictureGallery pictures={request.pictures} title={request.title} />
+                  <PictureGallery
+                    pictures={request.pictures}
+                    title={request.title}
+                  />
                 </CardContent>
               </Card>
             )}
@@ -112,19 +137,27 @@ export function RequestDetail({ request, onBack }: RequestDetailProps) {
             {/* Additional Details */}
             <Card className="rounded-none border-gray-200">
               <CardContent className="p-6">
-                <h3 className="text-lg font-medium mb-4">Additional Information</h3>
+                <h3 className="text-lg font-medium mb-4">
+                  Additional Information
+                </h3>
                 <div className="space-y-3 text-sm text-gray-600">
                   <div className="flex justify-between">
                     <span>Request Type:</span>
-                    <span className="font-medium text-gray-900">{request.category}</span>
+                    <span className="font-medium text-gray-900">
+                      {request.category}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Location:</span>
-                    <span className="font-medium text-gray-900">{request.location}</span>
+                    <span className="font-medium text-gray-900">
+                      {request.location}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Posted:</span>
-                    <span className="font-medium text-gray-900">{request.timePosted}</span>
+                    <span className="font-medium text-gray-900">
+                      {request.timePosted}
+                    </span>
                   </div>
                 </div>
               </CardContent>
@@ -138,8 +171,12 @@ export function RequestDetail({ request, onBack }: RequestDetailProps) {
                   <div className="w-full h-64 rounded-lg overflow-hidden border bg-gray-50 flex items-center justify-center">
                     <div className="text-center">
                       <MapPin className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                      <p className="text-sm text-gray-600 font-medium">{request.location}</p>
-                      <p className="text-xs text-gray-500 mt-1">Interactive map would appear here</p>
+                      <p className="text-sm text-gray-600 font-medium">
+                        {request.location}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Interactive map would appear here
+                      </p>
                     </div>
                   </div>
                   <p className="text-sm text-gray-600 mt-2">
@@ -154,14 +191,20 @@ export function RequestDetail({ request, onBack }: RequestDetailProps) {
             {request.locationType === "online" && (
               <Card className="rounded-none border-gray-200">
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-medium mb-4">Online/Remote Help</h3>
+                  <h3 className="text-lg font-medium mb-4">
+                    Online/Remote Help
+                  </h3>
                   <div className="w-full h-64 rounded-lg overflow-hidden border bg-blue-50 flex items-center justify-center">
                     <div className="text-center">
                       <div className="w-12 h-12 bg-blue-500 rounded-full mx-auto mb-3 flex items-center justify-center">
                         <span className="text-white text-lg">💻</span>
                       </div>
-                      <p className="text-sm text-blue-700 font-medium">This help will be provided remotely</p>
-                      <p className="text-xs text-blue-600 mt-1">Connect via video call, phone, or messaging</p>
+                      <p className="text-sm text-blue-700 font-medium">
+                        This help will be provided remotely
+                      </p>
+                      <p className="text-xs text-blue-600 mt-1">
+                        Connect via video call, phone, or messaging
+                      </p>
                     </div>
                   </div>
                   <p className="text-sm text-gray-600 mt-2">
@@ -183,11 +226,17 @@ export function RequestDetail({ request, onBack }: RequestDetailProps) {
                     <MessageCircle className="w-4 h-4 mr-2" />
                     Send Message
                   </Button>
-                  <Button variant="outline" className="w-full rounded-full py-3">
+                  <Button
+                    variant="outline"
+                    className="w-full rounded-full py-3"
+                  >
                     <Phone className="w-4 h-4 mr-2" />
                     Call Helper
                   </Button>
-                  <Button variant="outline" className="w-full rounded-full py-3">
+                  <Button
+                    variant="outline"
+                    className="w-full rounded-full py-3"
+                  >
                     <Mail className="w-4 h-4 mr-2" />
                     Send Email
                   </Button>
@@ -200,7 +249,7 @@ export function RequestDetail({ request, onBack }: RequestDetailProps) {
               <CardContent className="p-6">
                 <h3 className="text-lg font-medium mb-4">Quick Response</h3>
                 <div className="space-y-3">
-                  <Textarea 
+                  <Textarea
                     placeholder="Let them know how you can help..."
                     className="min-h-[100px] rounded-lg"
                   />
