@@ -55,7 +55,7 @@ const AVAILABLE_CATEGORIES = [
 ];
 
 export function PostPage({ onBack, onSubmit, existingPost }: PostPageProps) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -256,8 +256,10 @@ export function PostPage({ onBack, onSubmit, existingPost }: PostPageProps) {
           locationType,
           timePosted: "Just now",
           author:
+            profile?.display_name ||
+            profile?.username ||
             user?.user_metadata?.full_name ||
-            user?.email?.split("@")[0] ||
+            user?.user_metadata?.name ||
             "User",
           urgency,
           pictures: pictures.length > 0 ? pictures : undefined,

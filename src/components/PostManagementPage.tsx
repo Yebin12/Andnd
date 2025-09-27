@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Bookmark, Edit2, Trash2, Eye, User } from "lucide-react";
+import { ArrowLeft, Bookmark, Edit2, Trash2, User } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
@@ -32,7 +32,7 @@ export function PostManagementPage({
   onEditPost,
   onCreatePost,
 }: PostManagementPageProps) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [activeTab, setActiveTab] = useState("posted");
   const [showResolveModal, setShowResolveModal] = useState(false);
   const [postToResolve, setPostToResolve] = useState<string | null>(null);
@@ -41,7 +41,11 @@ export function PostManagementPage({
   const userPosts = allRequests.filter((request) => {
     // For now, we'll use the author field, but in a real app this would be based on user ID
     const userDisplayName =
-      user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User";
+      profile?.display_name ||
+      profile?.username ||
+      user?.user_metadata?.full_name ||
+      user?.user_metadata?.name ||
+      "User";
     return request.author === userDisplayName;
   });
 
@@ -157,14 +161,6 @@ export function PostManagementPage({
                 <Bookmark className="h-4 w-4 fill-current" />
               </Button>
             )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onSelectRequest(request)}
-              className="h-8 w-8"
-            >
-              <Eye className="h-4 w-4" />
-            </Button>
           </div>
         </div>
       </CardHeader>
@@ -221,8 +217,10 @@ export function PostManagementPage({
             </Avatar>
             <div className="text-center">
               <p className="font-medium text-lg mb-1">
-                {user?.user_metadata?.full_name ||
-                  user?.email?.split("@")[0] ||
+                {profile?.display_name ||
+                  profile?.username ||
+                  user?.user_metadata?.full_name ||
+                  user?.user_metadata?.name ||
                   "User"}
               </p>
               <p className="text-sm text-muted-foreground mb-3">
