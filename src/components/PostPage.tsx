@@ -81,6 +81,16 @@ export function PostPage({ onBack, onSubmit, existingPost }: PostPageProps) {
   const [submitError, setSubmitError] = useState("");
   const [hasDraft, setHasDraft] = useState(false);
 
+  // Check if there's current form content
+  const hasFormContent =
+    title ||
+    description ||
+    selectedCategories.length > 0 ||
+    pictures.length > 0 ||
+    location ||
+    emailContact ||
+    phoneContact;
+
   // Populate form with existing post data when editing
   useEffect(() => {
     if (existingPost) {
@@ -181,17 +191,7 @@ export function PostPage({ onBack, onSubmit, existingPost }: PostPageProps) {
   };
 
   const handleViewDraft = () => {
-    // Check if current form has content
-    const hasContent =
-      title ||
-      description ||
-      selectedCategories.length > 0 ||
-      pictures.length > 0 ||
-      location ||
-      emailContact ||
-      phoneContact;
-
-    if (hasContent) {
+    if (hasFormContent) {
       const confirmLoad = window.confirm(
         "Loading the draft will replace your current form content. Are you sure you want to continue?"
       );
@@ -391,6 +391,7 @@ export function PostPage({ onBack, onSubmit, existingPost }: PostPageProps) {
               variant="outline"
               onClick={handleSaveDraft}
               className="rounded-full"
+              disabled={!hasFormContent}
             >
               Save Draft
             </Button>
