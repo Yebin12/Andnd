@@ -293,100 +293,102 @@ export function GoogleMapLocationPicker({
     <div className={`space-y-4 ${className}`}>
       {/* Search and Controls */}
       <div className="space-y-3">
-        <div className="flex gap-2">
-          <div className="flex-1 relative w-full min-w-0">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              placeholder="Search for a location..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                onSearchQueryChange?.(e.target.value);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleSearch();
-                }
-              }}
-              onFocus={() => {
-                if (suggestions.length > 0) {
-                  setShowSuggestions(true);
-                }
-              }}
-              onBlur={() => {
-                // Delay hiding suggestions to allow clicking on them
-                setTimeout(() => setShowSuggestions(false), 200);
-              }}
-              className="pl-10 rounded-lg"
-            />
+        <div className="relative w-full">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Input
+            placeholder="Search for a location..."
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              onSearchQueryChange?.(e.target.value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleSearch();
+              }
+            }}
+            onFocus={() => {
+              if (suggestions.length > 0) {
+                setShowSuggestions(true);
+              }
+            }}
+            onBlur={() => {
+              // Delay hiding suggestions to allow clicking on them
+              setTimeout(() => setShowSuggestions(false), 200);
+            }}
+            className="pl-10 pr-10 rounded-lg"
+          />
+            {searchQuery && (
+              <div
+                onClick={() => {
+                  setSearchQuery("");
+                  onSearchQueryChange?.("");
+                  setShowSuggestions(false);
+                  setSuggestions([]);
+                }}
+                className="absolute top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 hover:text-gray-600 z-10 cursor-pointer flex items-center justify-center"
+                style={{ right: '12px' }}
+              >
+                <X className="w-4 h-4" />
+              </div>
+            )}
 
-            {/* Dropdown Suggestions */}
-            {showSuggestions &&
-              (suggestions.length > 0 || isLoadingSuggestions || error) && (
-                <div
-                  className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto"
-                  style={{
-                    width: "100%",
-                    minWidth: "100%",
-                    right: 0,
-                  }}
-                >
-                  {isLoadingSuggestions && (
-                    <div className="flex items-center justify-center py-3 px-4">
-                      <Loader2 className="w-4 h-4 animate-spin text-blue-500 mr-2" />
-                      <span className="text-sm text-gray-600">
-                        Searching...
-                      </span>
+          {/* Dropdown Suggestions */}
+          {showSuggestions &&
+            (suggestions.length > 0 || isLoadingSuggestions || error) && (
+              <div
+                className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto"
+                style={{
+                  width: "100%",
+                  minWidth: "100%",
+                  right: 0,
+                }}
+              >
+                {isLoadingSuggestions && (
+                  <div className="flex items-center justify-center py-3 px-4">
+                    <Loader2 className="w-4 h-4 animate-spin text-blue-500 mr-2" />
+                    <span className="text-sm text-gray-600">Searching...</span>
+                  </div>
+                )}
+
+                {error && (
+                  <div className="px-4 py-3 text-sm text-red-600 border-b border-gray-100">
+                    {error}
+                  </div>
+                )}
+
+                {!isLoadingSuggestions &&
+                  !error &&
+                  suggestions.map((suggestion) => (
+                    <div
+                      key={suggestion.placeId}
+                      className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                      onClick={() => handleSuggestionSelect(suggestion)}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm truncate">
+                          {suggestion.name}
+                        </span>
+                        {suggestion.isPopular && (
+                          <Star className="w-3 h-3 text-yellow-500 fill-current flex-shrink-0" />
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-600 truncate">
+                        {suggestion.address}
+                      </p>
+                    </div>
+                  ))}
+
+                {!isLoadingSuggestions &&
+                  !error &&
+                  suggestions.length === 0 &&
+                  searchQuery.length >= 2 && (
+                    <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                      No locations found for "{searchQuery}"
                     </div>
                   )}
-
-                  {error && (
-                    <div className="px-4 py-3 text-sm text-red-600 border-b border-gray-100">
-                      {error}
-                    </div>
-                  )}
-
-                  {!isLoadingSuggestions &&
-                    !error &&
-                    suggestions.map((suggestion) => (
-                      <div
-                        key={suggestion.placeId}
-                        className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-                        onClick={() => handleSuggestionSelect(suggestion)}
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-sm truncate">
-                            {suggestion.name}
-                          </span>
-                          {suggestion.isPopular && (
-                            <Star className="w-3 h-3 text-yellow-500 fill-current flex-shrink-0" />
-                          )}
-                        </div>
-                        <p className="text-xs text-gray-600 truncate">
-                          {suggestion.address}
-                        </p>
-                      </div>
-                    ))}
-
-                  {!isLoadingSuggestions &&
-                    !error &&
-                    suggestions.length === 0 &&
-                    searchQuery.length >= 2 && (
-                      <div className="px-4 py-3 text-sm text-gray-500 text-center">
-                        No locations found for "{searchQuery}"
-                      </div>
-                    )}
-                </div>
-              )}
-          </div>
-          <Button
-            onClick={handleSearch}
-            disabled={!searchQuery.trim() || isLoading}
-            variant="outline"
-            className="rounded-lg"
-          >
-            {isLoading ? "Searching..." : "Search"}
-          </Button>
+              </div>
+            )}
         </div>
 
         <div className="flex gap-2">
