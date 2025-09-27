@@ -191,6 +191,13 @@ export function PostPage({ onBack, onSubmit, existingPost }: PostPageProps) {
   };
 
   const handleViewDraft = () => {
+    const savedDraft = localStorage.getItem("postDraft");
+
+    if (!savedDraft) {
+      alert("No saved draft found. Please save a draft first.");
+      return;
+    }
+
     if (hasFormContent) {
       const confirmLoad = window.confirm(
         "Loading the draft will replace your current form content. Are you sure you want to continue?"
@@ -381,19 +388,18 @@ export function PostPage({ onBack, onSubmit, existingPost }: PostPageProps) {
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
-              onClick={handleViewDraft}
-              className="rounded-full"
-              disabled={!hasDraft}
-            >
-              View Draft
-            </Button>
-            <Button
-              variant="outline"
               onClick={handleSaveDraft}
               className="rounded-full"
               disabled={!hasFormContent}
             >
               Save Draft
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleViewDraft}
+              className="rounded-full"
+            >
+              View Draft
             </Button>
           </div>
         </div>
